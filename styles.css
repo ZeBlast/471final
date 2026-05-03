@@ -1,0 +1,528 @@
+:root {
+  --bg: #f5efe3;
+  --bg-alt: #fcf8f1;
+  --surface: rgba(255, 252, 245, 0.84);
+  --surface-strong: #fffdf8;
+  --ink: #162033;
+  --muted: #5a6172;
+  --line: rgba(22, 32, 51, 0.12);
+  --accent: #d4572f;
+  --accent-soft: #f2b06d;
+  --teal: #1f8a70;
+  --teal-soft: #9cd8c5;
+  --gold: #f0c66b;
+  --danger: #c94141;
+  --shadow: 0 20px 60px rgba(35, 26, 12, 0.12);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: "Source Sans 3", sans-serif;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at top left, rgba(240, 198, 107, 0.35), transparent 28%),
+    radial-gradient(circle at 85% 10%, rgba(31, 138, 112, 0.18), transparent 24%),
+    linear-gradient(180deg, #efe5d2 0%, #f8f3ea 48%, #f4eee4 100%);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.page-shell {
+  width: min(1380px, calc(100% - 32px));
+  margin: 0 auto;
+  padding-bottom: 48px;
+}
+
+.hero {
+  padding: 24px 0 32px;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 14px;
+  margin-bottom: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 18px;
+  background: rgba(255, 248, 236, 0.62);
+  backdrop-filter: blur(14px);
+  box-shadow: var(--shadow);
+}
+
+.brand,
+h1,
+h2,
+h3 {
+  font-family: "Space Grotesk", sans-serif;
+}
+
+.brand {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.topbar-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  color: var(--muted);
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1.3fr 0.9fr;
+  gap: 24px;
+}
+
+.hero-copy,
+.hero-panel,
+.panel {
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 28px;
+  background: var(--surface);
+  backdrop-filter: blur(16px);
+  box-shadow: var(--shadow);
+}
+
+.hero-copy {
+  padding: 36px;
+}
+
+.eyebrow {
+  margin: 0 0 12px;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 700;
+  font-size: 0.78rem;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(2.7rem, 5vw, 5rem);
+  line-height: 0.95;
+}
+
+.hero-text {
+  max-width: 62ch;
+  color: var(--muted);
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin: 20px 0 26px;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 0 18px;
+  border-radius: 999px;
+  font-weight: 700;
+  transition: transform 160ms ease, background 160ms ease;
+}
+
+.button:hover {
+  transform: translateY(-1px);
+}
+
+.button.primary {
+  background: var(--ink);
+  color: #fff;
+}
+
+.button.secondary {
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid var(--line);
+}
+
+.hero-panel {
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  justify-content: space-between;
+}
+
+.hero-stat {
+  padding: 20px;
+  border-radius: 22px;
+  background: linear-gradient(135deg, rgba(31, 138, 112, 0.12), rgba(212, 87, 47, 0.08));
+}
+
+.hero-stat-label,
+.hero-mini-grid span,
+.section-heading p,
+.chart-header p,
+.college-card .meta,
+.tooltip .meta,
+.projection-summary .summary-label {
+  color: var(--muted);
+}
+
+.hero-stat strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 1.45rem;
+  line-height: 1.2;
+}
+
+.hero-mini-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.hero-mini-grid article {
+  padding: 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid var(--line);
+}
+
+.hero-mini-grid strong {
+  display: block;
+  margin-top: 8px;
+  line-height: 1.25;
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.story-section {
+  padding-top: 10px;
+}
+
+.section-heading {
+  display: grid;
+  grid-template-columns: 0.95fr 1.05fr;
+  gap: 24px;
+  align-items: end;
+  margin-bottom: 16px;
+}
+
+.section-heading h2 {
+  margin: 0;
+  font-size: clamp(1.9rem, 3.5vw, 3rem);
+}
+
+.section-heading p {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+.controls-panel,
+.projection-shell {
+  padding: 18px;
+}
+
+.controls-panel {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(160px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.control-group label {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+select {
+  width: 100%;
+  min-height: 46px;
+  padding: 0 12px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.82);
+  color: var(--ink);
+  font: inherit;
+}
+
+.learn-layout,
+.explore-layout {
+  display: grid;
+  gap: 16px;
+}
+
+.learn-layout {
+  grid-template-columns: 1.1fr 0.9fr;
+}
+
+.explore-layout {
+  grid-template-columns: 1.25fr 0.75fr;
+}
+
+.chart-panel,
+.map-panel,
+.insight-panel {
+  padding: 18px;
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.chart-header h3,
+.insight-panel h3 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.chart-header p {
+  margin: 6px 0 0;
+}
+
+.legend,
+.map-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: center;
+  font-size: 0.92rem;
+}
+
+.legend span,
+.map-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legend-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  display: inline-block;
+}
+
+.legend-swatch.employed {
+  background: var(--teal);
+}
+
+.legend-swatch.unemployed {
+  background: var(--danger);
+}
+
+svg {
+  width: 100%;
+  display: block;
+}
+
+#employment-chart,
+#debt-chart,
+#projection-line-chart,
+#debt-earnings-chart {
+  height: 420px;
+}
+
+#us-map {
+  min-height: 620px;
+}
+
+.map-wrap {
+  position: relative;
+}
+
+.tooltip {
+  position: absolute;
+  min-width: 220px;
+  max-width: 280px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(19, 27, 43, 0.94);
+  color: #fff;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+  transform: translate(10px, 10px);
+}
+
+.hidden {
+  display: none;
+}
+
+.tooltip strong,
+.college-card strong {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1rem;
+}
+
+.tooltip p,
+.college-card p {
+  margin: 6px 0;
+}
+
+.college-card {
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.metric-tile,
+.summary-tile {
+  padding: 14px;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.52);
+}
+
+.metric-tile span,
+.summary-tile span {
+  display: block;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
+.metric-tile strong,
+.summary-tile strong {
+  display: block;
+  margin-top: 6px;
+  font-size: 1.15rem;
+}
+
+.projection-shell {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 18px;
+}
+
+.projection-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.projection-summary {
+  display: grid;
+  gap: 10px;
+}
+
+.projection-charts {
+  display: grid;
+  gap: 16px;
+}
+
+.axis text,
+.axis-label,
+.annotation {
+  fill: var(--muted);
+  font-family: "Source Sans 3", sans-serif;
+}
+
+.axis path,
+.axis line,
+.grid line {
+  stroke: rgba(22, 32, 51, 0.15);
+}
+
+.grid path {
+  stroke: none;
+}
+
+.chart-title-inline {
+  font-weight: 700;
+  fill: var(--ink);
+}
+
+.footnote {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+@media (max-width: 1100px) {
+  .hero-grid,
+  .section-heading,
+  .learn-layout,
+  .explore-layout,
+  .projection-shell {
+    grid-template-columns: 1fr;
+  }
+
+  #us-map {
+    min-height: 500px;
+  }
+}
+
+@media (max-width: 720px) {
+  .page-shell {
+    width: min(100% - 20px, 1380px);
+  }
+
+  .hero-copy,
+  .hero-panel,
+  .controls-panel,
+  .chart-panel,
+  .map-panel,
+  .insight-panel,
+  .projection-shell {
+    padding: 16px;
+    border-radius: 22px;
+  }
+
+  .controls-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .topbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .hero-mini-grid,
+  .metric-grid {
+    grid-template-columns: 1fr;
+  }
+
+  h1 {
+    font-size: 2.5rem;
+  }
+
+  #employment-chart,
+  #debt-chart,
+  #projection-line-chart,
+  #debt-earnings-chart {
+    height: 360px;
+  }
+}
