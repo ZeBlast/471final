@@ -219,24 +219,13 @@
         <div class="section-heading">
           <div>
             <p class="eyebrow">Section 3</p>
-            <h2>Decide: Debt vs. Earnings Over Time</h2>
+            <h2>Decide: Directly Compare College Projections</h2>
           </div>
-          <p>
-            Choose a college and compare yearly cost, debt at completion, and the available earnings horizons
-            for the selected cohort.
-          </p>
+          
         </div>
 
         <div class="panel projection-shell">
           <div class="projection-controls">
-            <div class="control-group">
-              <label for="projection-state">State</label>
-              <select id="projection-state"></select>
-            </div>
-            <div class="control-group">
-              <label for="projection-college">College</label>
-              <select id="projection-college"></select>
-            </div>
             <div class="control-group">
               <label for="projection-residency">Tuition View</label>
               <select id="projection-residency">
@@ -244,30 +233,9 @@
                 <option value="tuitionOutState">Out-of-state tuition</option>
               </select>
             </div>
-
-            <div class="projection-summary" id="projection-summary"></div>
           </div>
-
+          <div id="saved-colleges"></div>
           <div class="projection-charts">
-            <article class="chart-panel">
-              <div class="chart-header">
-                <div>
-                  <h3>Earnings Horizon Comparison</h3>
-                  <p>See how available year 1, year 5, and year 10 earnings compare to completer debt.</p>
-                </div>
-              </div>
-              <svg id="projection-line-chart" aria-label="Debt paydown and earnings chart"></svg>
-            </article>
-
-            <article class="chart-panel">
-              <div class="chart-header">
-                <div>
-                  <h3>Cost, Debt, and Earnings Snapshot</h3>
-                  <p>Compare tuition, total cost, completer debt, and selected earnings metrics for one college.</p>
-                </div>
-              </div>
-              <svg id="debt-earnings-chart" aria-label="Cost debt earnings comparison chart"></svg>
-            </article>
           </div>
         </div>
       </section>

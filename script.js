@@ -37,7 +37,8 @@ const state = {
   mapSize: "y1P50Earnings",
   projectionState: "All States",
   projectionCollege: "",
-  projectionResidency: "tuitionInState"
+  projectionResidency: "tuitionInState",
+  savedColleges: []
 };
 
 initialize();
@@ -55,6 +56,7 @@ async function initialize() {
   recalcDerivedState();
   initializeControls();
   renderAll();
+  renderSavedColleges();
   window.addEventListener("resize", renderAll);
 }
 
@@ -85,11 +87,7 @@ function recalcDerivedState() {
   if (!state.stateOptions.includes(state.mapState)) {
     state.mapState = "All States";
   }
-  if (!state.stateOptions.includes(state.projectionState)) {
-    state.projectionState = "All States";
-  }
   updateStateBoundSelects();
-  refreshCollegeSelect();
 }
 
 function initializeControls() {
@@ -121,25 +119,12 @@ function initializeControls() {
 
   d3.select("#map-state").on("change", (event) => {
     state.mapState = event.target.value;
-    syncProjectionState(event.target.value);
     renderMapSection();
   });
 
   d3.select("#map-size").on("change", (event) => {
     state.mapSize = event.target.value;
     renderMapSection();
-  });
-
-  d3.select("#projection-state").on("change", (event) => {
-    state.projectionState = event.target.value;
-    syncMapState(event.target.value);
-    refreshCollegeSelect();
-    renderProjectionSection();
-  });
-
-  d3.select("#projection-college").on("change", (event) => {
-    state.projectionCollege = event.target.value;
-    renderProjectionSection();
   });
 
   d3.select("#projection-residency").on("change", (event) => {
@@ -160,7 +145,6 @@ function populateSelect(selector, values, selectedValue, formatter = (d) => d) {
 
 function updateStateBoundSelects() {
   populateSelect("#map-state", state.stateOptions, state.mapState);
-  populateSelect("#projection-state", state.stateOptions, state.projectionState);
   d3.select("#global-cohort").property("value", state.selectedCohort);
 }
 
@@ -218,6 +202,7 @@ function renderAll() {
   renderLearnSection();
   renderMapSection();
   renderProjectionSection();
+  renderSavedColleges();
 }
 
 function renderLearnSection() {
@@ -442,6 +427,7 @@ async function renderMapSection() {
             <p>Available horizons: ${availableHorizonsLabel(d)}</p>
           `);
       })
+      .on("click", (event, d) => addToSaved(d))
       .on("mouseleave", () => tooltip.classed("hidden", true));
   } catch (error) {
     renderEmptyMap(svg, width, height, "Map data could not be loaded. Check your internet connection for the basemap.");
@@ -455,6 +441,35 @@ function renderEmptyMap(svg, width, height, message) {
     .attr("text-anchor", "middle")
     .attr("fill", "var(--muted)")
     .text(message);
+}
+
+function addToSaved(college) {
+  if (!state.savedColleges.find(c => c.name === college.name && c.gradCohort === college.gradCohort)) {
+    state.savedColleges.push(college);
+    renderSavedColleges();
+    renderProjectionSection();
+  }
+}
+
+function renderSavedColleges() {
+  const container = d3.select("#saved-colleges");
+  container.selectAll("*").remove();
+  if (!state.savedColleges.length) {
+    container.append("p").text("No saved colleges. Click on colleges on the map to add them.");
+    return;
+  }
+  const list = container.append("ul").attr("class", "saved-colleges-list");
+  list.selectAll("li")
+    .data(state.savedColleges)
+    .join("li")
+    .html(d => `<span>${d.name} (${d.state})</span><button class="remove-btn" data-name="${d.name}" data-cohort="${d.gradCohort}">Remove</button>`);
+  list.selectAll(".remove-btn").on("click", function() {
+    const name = this.getAttribute("data-name");
+    const cohort = this.getAttribute("data-cohort");
+    state.savedColleges = state.savedColleges.filter(c => !(c.name === name && c.gradCohort === cohort));
+    renderSavedColleges();
+    renderProjectionSection();
+  });
 }
 
 function renderEmptySvgMessage(svg, width, height, message) {
@@ -508,43 +523,47 @@ function updateCollegeCard(college) {
 }
 
 function renderProjectionSection() {
-  const college = getFilteredInstitutions(state.projectionState).find((d) => d.name === state.projectionCollege)
-    || getCohortRows().find((d) => d.name === state.projectionCollege)
-    || getCohortRows()[0];
+  const container = d3.select(".projection-charts");
+  container.selectAll("*").remove();
+  // if (!state.savedColleges.length) {
+  //   container.append("p").text("Add colleges from the map to compare them here.");
+  //   return;
+  // }
 
-  if (!college) {
-    return;
-  }
+  state.savedColleges.forEach((college, i) => {
+    const article = container.append("article").attr("class", "chart-panel");
+    const tuition = college[state.projectionResidency] ?? college.tuitionInState ?? 0;
+    const totalCost = tuition + (college.roomCost || 0) + (college.bookCost || 0);
+    const debt = college.completerDebt ?? college.medianDebtOverall ?? 0;
 
-  const tuition = college[state.projectionResidency] ?? college.tuitionInState ?? 0;
-  const totalCost = tuition + (college.roomCost || 0) + (college.bookCost || 0);
-  const debt = college.completerDebt ?? college.medianDebtOverall ?? 0;
+    article.append("div").attr("class", "chart-header").html(`
+      <div>
+        <h3>${college.name}</h3>
+        <p>${college.city || "Unknown city"}, ${college.state} | ${formatCohortLabel(college.gradCohort)}</p>
+      </div>
+    `);
 
-  d3.select("#projection-summary").html(`
-    <div class="summary-tile">
-      <span class="summary-label">${formatCohortLabel(college.gradCohort)}</span>
-      <strong>${availableHorizonsLabel(college)}</strong>
-    </div>
-    <div class="summary-tile">
-      <span class="summary-label">Completer debt</span>
-      <strong>${formatValue("completerDebt", debt)}</strong>
-    </div>
-    <div class="summary-tile">
-      <span class="summary-label">Estimated annual cost</span>
-      <strong>${formatValue("totalCostEstimate", totalCost)}</strong>
-    </div>
-    <div class="summary-tile">
-      <span class="summary-label">Year-1 earnings to debt</span>
-      <strong>${formatValue("earningsDebtRatio", college.earningsDebtRatio)}</strong>
-    </div>
-  `);
+    article.append("div").attr("class", "summary-tiles").html(`
+      <div class="summary-tile">
+        <span class="summary-label">Completer debt</span>
+        <strong>${formatValue("completerDebt", debt)}</strong>
+      </div>
+      <div class="summary-tile">
+        <span class="summary-label">Estimated annual cost</span>
+        <strong>${formatValue("totalCostEstimate", totalCost)}</strong>
+      </div>
+      <div class="summary-tile">
+        <span class="summary-label">Year-1 earnings to debt</span>
+        <strong>${formatValue("earningsDebtRatio", college.earningsDebtRatio)}</strong>
+      </div>
+    `);
 
-  renderEarningsHorizonChart(college, debt);
-  renderSnapshotChart(tuition, totalCost, debt, college);
+    const svg = article.append("svg").attr("aria-label", `Earnings chart for ${college.name}`);
+    renderEarningsHorizonChartForCollege(svg, college, debt);
+  });
 }
 
-function renderEarningsHorizonChart(college, debt) {
-  const svg = d3.select("#projection-line-chart");
+function renderEarningsHorizonChartForCollege(svg, college, debt) {
   const width = svg.node().clientWidth;
   const height = svg.node().clientHeight;
   const margin = { top: 24, right: 24, bottom: 50, left: 72 };
@@ -596,15 +615,6 @@ function renderEarningsHorizonChart(college, debt) {
     .attr("stroke", "var(--accent)")
     .attr("stroke-width", 3)
     .attr("stroke-dasharray", "8 6");
-
-  svg.append("text")
-    .attr("x", width - margin.right)
-    .attr("y", y(debt) - 10)
-    .attr("text-anchor", "end")
-    .attr("fill", "var(--accent)")
-    .attr("font-size", 12)
-    .attr("font-weight", 700)
-    .text(`Completer debt: ${formatCurrency(debt)}`);
 
   svg.append("g")
     .selectAll("circle")
