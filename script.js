@@ -320,7 +320,7 @@ function renderStateEfficiencyChart(data) {
   svg.append("g")
     .attr("class", "grid")
     .attr("transform", `translate(${margin.left},0)`)
-    .call(d3.axisLeft(y).tickSize(-(width - margin.left - margin.right)).tickFormat((d) => formatCurrency(d)))
+    .call(d3.axisLeft(y).tickSize(-(width - margin.left - margin.right)).tickFormat(""))
     .call((g) => g.select(".domain").remove());
 
   const groups = svg.append("g")
@@ -381,6 +381,7 @@ async function renderMapSection() {
   const width = svg.node().clientWidth;
   const height = Math.max(500, Math.round(width * 0.62));
   const tooltip = d3.select("#map-tooltip");
+  const mapWrap = d3.select(".map-wrap");
   const data = getFilteredInstitutions(state.mapState)
     .filter((d) => d[state.mapMetric] != null && d[state.mapSize] != null && d.lat != null && d.lon != null);
 
@@ -426,9 +427,13 @@ async function renderMapSection() {
       .attr("opacity", 0.86)
       .on("mousemove", (event, d) => {
         updateCollegeCard(d);
+        const [pointerX, pointerY] = d3.pointer(event, mapWrap.node());
+        const tooltipLeft = pointerX > width * 0.7 ? pointerX - 280 : pointerX + 16;
+        const tooltipTop = pointerY > height * 0.75 ? pointerY - 140 : pointerY + 16;
+
         tooltip.classed("hidden", false)
-          .style("left", `${event.offsetX + 12}px`)
-          .style("top", `${event.offsetY + 12}px`)
+          .style("left", `${Math.max(8, tooltipLeft)}px`)
+          .style("top", `${Math.max(8, tooltipTop)}px`)
           .html(`
             <strong>${d.name}</strong>
             <p class="meta">${d.city || "Unknown city"}, ${d.state} | ${formatCohortLabel(d.gradCohort)}</p>
@@ -568,7 +573,7 @@ function renderEarningsHorizonChart(college, debt) {
   svg.append("g")
     .attr("class", "grid")
     .attr("transform", `translate(${margin.left},0)`)
-    .call(d3.axisLeft(y).tickSize(-(width - margin.left - margin.right)).tickFormat((d) => formatCurrency(d)))
+    .call(d3.axisLeft(y).tickSize(-(width - margin.left - margin.right)).tickFormat(""))
     .call((g) => g.select(".domain").remove());
 
   const line = d3.line()
@@ -670,7 +675,7 @@ function renderSnapshotChart(tuition, totalCost, debt, college) {
   svg.append("g")
     .attr("class", "grid")
     .attr("transform", `translate(${margin.left},0)`)
-    .call(d3.axisLeft(y).tickSize(-(width - margin.left - margin.right)).tickFormat((d) => formatCurrency(d)))
+    .call(d3.axisLeft(y).tickSize(-(width - margin.left - margin.right)).tickFormat(""))
     .call((g) => g.select(".domain").remove());
 
   svg.append("g")
