@@ -219,7 +219,7 @@ function renderStateEarningsChart(data) {
   const svg = d3.select("#employment-chart");
   const width = svg.node().clientWidth;
   const height = svg.node().clientHeight;
-  const margin = { top: 20, right: 32, bottom: 22, left: 116 };
+  const margin = { top: 20, right: 168, bottom: 22, left: 84 };
 
   svg.selectAll("*").remove();
   if (!data.length) {
