@@ -361,6 +361,27 @@ svg {
   z-index: 3;
 }
 
+.back-to-country-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+
+.back-to-country-container button {
+  background: var(--ink);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 160ms ease;
+}
+
+.back-to-country-container button:hover {
+  background: var(--accent);
+}
+
 .tooltip {
   position: absolute;
   min-width: 220px;

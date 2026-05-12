@@ -4,7 +4,7 @@ This project is an interactive D3 webpage about post-college outcomes. It combin
 
 ## Datasets
 
-### `schools.csv`
+### `data/schools.csv`
 Used for institution identity and location data.
 
 Fields used:
@@ -19,7 +19,7 @@ Purpose:
 - provides tuition and estimated yearly cost
 - provides labels and geographic placement
 
-### `aid.csv`
+### `data/aid.csv`
 Used for borrowing and debt metrics.
 
 Fields used:
@@ -40,7 +40,7 @@ Purpose:
 
 The above CSVs were downloaded from https://www.kaggle.com/datasets/akibmir/college-scorecard/
 
-### `pseo_all_institutions.csv`
+### `data/pseo_all_institutions.csv`
 Used as the institution lookup for PSEO.
 
 Fields used:
@@ -52,7 +52,7 @@ Purpose:
 - provides the PSEO institution name/id side of the merge
 - is matched to Scorecard schools by state and institution name
 
-### `pseoe_all.csv`
+### `data/pseoe_all.csv`
 Used for earnings outcomes by cohort.
 
 Filters used:
@@ -79,7 +79,7 @@ The above CSVs were downloaded from https://lehd.ces.census.gov/data/pseo_experi
 
 ## Combined Data
 
-### `combined_pseo_all_cohorts.csv`
+### `data/combined_pseo_all_cohorts.csv`
 This is the main dataset used by the webpage at runtime.
 
 It merges:
@@ -107,6 +107,6 @@ Each row represents:
 
 ## Important Notes
 
-- The app reads `combined_pseo_all_cohorts.csv` directly in the browser with D3.
+- The app reads `data/combined_pseo_all_cohorts.csv` directly in the browser with D3.
 - The local PSEO file does not contain cohorts after `2019`.
 - Not every cohort has populated `y1`, `y5`, and `y10` earnings columns, so availability depends on the selected cohort.

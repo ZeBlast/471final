@@ -6,11 +6,12 @@ from pathlib import Path
 
 
 BASE = Path(__file__).resolve().parent
-SCHOOLS_PATH = BASE / "schools.csv"
-AID_PATH = BASE / "aid.csv"
-PSEO_INST_PATH = BASE / "pseo_all_institutions.csv"
-PSEO_OUTCOMES_PATH = BASE / "pseoe_all.csv"
-OUTPUT_PATH = BASE / "combined_pseo_all_cohorts.csv"
+DATA_DIR = BASE / "data"
+SCHOOLS_PATH = DATA_DIR / "schools.csv"
+AID_PATH = DATA_DIR / "aid.csv"
+PSEO_INST_PATH = DATA_DIR / "pseo_all_institutions.csv"
+PSEO_OUTCOMES_PATH = DATA_DIR / "pseoe_all.csv"
+OUTPUT_PATH = DATA_DIR / "combined_pseo_all_cohorts.csv"
 
 MANUAL_NAME_MAP = {
     ("AL", "University of Alabama"): "The University of Alabama",

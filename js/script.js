@@ -44,7 +44,7 @@ const state = {
 initialize();
 
 async function initialize() {
-  const rows = await d3.csv("combined_pseo_all_cohorts.csv", parseRow);
+  const rows = await d3.csv("data/combined_pseo_all_cohorts.csv", parseRow);
   state.allRows = rows;
   state.cohortOptions = [...new Set(rows.map((d) => d.gradCohort))]
     .sort((a, b) => cohortOrder.indexOf(a) - cohortOrder.indexOf(b));

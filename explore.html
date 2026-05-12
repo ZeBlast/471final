@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Explore | College Scorecard Map</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="hero">
+      <nav class="topbar">
+        <div class="brand">After Graduation</div>
+        <div class="topbar-links">
+          <a href="#learn">Learn</a>
+          <a href="#explore">Explore</a>
+          <a href="#decide">Decide</a>
+          <a href="about.html" class="button-nav-about">About &amp; AI Usage</a>
+        </div>
+      </nav>
+
+
+    <section class="panel controls-panel note-panel">
+      <div class="control-group">
+        <label for="global-cohort">Graduation Cohort</label>
+        <select id="global-cohort"></select>
+      </div>
+      <div>
+        <strong>Dataset note</strong>
+        <p class="footnote">
+          This page loads College Scorecard institution-level data and field-of-study data directly from CSV files in <code>data/college_scorecard_data/</code>. No Python preprocessing is required for the browser map.
+        </p>
+      </div>
+    </section>
+
+    <main>
+
+      <section id="explore" class="story-section">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Section 2</p>
+            <h2>Explore: College Outcomes Map</h2>
+          </div>
+          <p>
+            Inspect colleges in the selected cohort. Color can emphasize earnings or debt, while point size
+            reveals scale in cost or salary.
+          </p>
+        </div>
+
+        <div class="story-callout">
+          <p>
+            <strong>Zoom in, dig deeper:</strong> Now that you know which states produce the best outcomes overall, 
+            it is time to look at individual schools. Each dot on the map is a college. Color and size encode the 
+            metrics you choose. Densely populated regions like the Northeast can be hard to read at full zoom, so 
+            use the <strong>+ / -</strong> controls or scroll to zoom, and drag to pan. Filter by state to isolate 
+            a specific region.
+          </p>
+          <p>
+            💡 <strong>Tip:</strong> Hover over any college dot to see its full profile in the panel on the right. 
+            Click a college dot to add it to your comparison list in Section 3 below, where you can directly 
+            compare debt burden against earnings trajectories side by side.
+          </p>
+        </div>
+
+        <div class="panel controls-panel">
+          <div class="control-group">
+            <label for="map-metric">Color Colleges By</label>
+            <select id="map-metric">
+              <option value="y1P50Earnings">Median year-1 earnings</option>
+              <option value="y5P50Earnings">Median year-5 earnings</option>
+              <option value="y10P50Earnings">Median year-10 earnings</option>
+              <option value="earningsDebtRatio">Earnings-to-debt ratio</option>
+              <option value="completerDebt">Completer debt</option>
+              <option value="tuitionInState">In-state tuition</option>
+              <option value="pellGrantRate">Pell grant rate</option>
+            </select>
+          </div>
+          <div class="control-group">
+            <label for="map-state">Filter State</label>
+            <select id="map-state"></select>
+          </div>
+          <div class="control-group">
+            <label for="map-size">Size Colleges By</label>
+            <select id="map-size">
+              <option value="y1P50Earnings">Median year-1 earnings</option>
+              <option value="y5P50Earnings">Median year-5 earnings</option>
+              <option value="y10P50Earnings">Median year-10 earnings</option>
+              <option value="totalCostEstimate">Estimated annual cost</option>
+              <option value="completerDebt">Completer debt</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="explore-layout">
+          <article class="panel map-panel">
+            <div class="chart-header">
+              <div>
+                <h3>College Scorecard Map</h3>
+                <p>Hover over a college to inspect details. Click a point to view the college profile.</p>
+              </div>
+              <div id="map-legend" class="map-legend"></div>
+            </div>
+            <div id="back-to-country-container" class="back-to-country-container">
+              <button id="back-to-country" title="Back to all states" class="hidden">← View all states</button>
+            </div>
+            <div class="map-wrap">
+              <div class="map-zoom-controls">
+                <button id="zoom-in" title="Zoom in">+</button>
+                <button id="zoom-reset" title="Reset zoom">⟳</button>
+                <button id="zoom-out" title="Zoom out">−</button>
+              </div>
+              <svg id="us-map" aria-label="PSEO college outcomes map"></svg>
+              <div id="map-tooltip" class="tooltip hidden"></div>
+            </div>
+          </article>
+
+          <aside class="panel insight-panel">
+            <h3>Selected College</h3>
+            <div id="college-card" class="college-card">
+              <p>Hover a college point on the map to inspect details here.</p>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
+  <script src="js/new_script.js"></script>
+</body>
+</html>
