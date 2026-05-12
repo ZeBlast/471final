@@ -627,6 +627,51 @@ svg {
 }
 
 /* ── Story callout boxes ───────────────────────────────────────────────── */
+.alert-banner {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 18px;
+  padding: 18px 22px;
+  border-radius: 20px;
+  background: linear-gradient(90deg, rgba(244,145,23,0.96), rgba(226,71,95,0.96));
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.16);
+}
+
+.alert-banner strong {
+  display: block;
+  font-size: 1rem;
+  margin-bottom: 4px;
+}
+
+.alert-banner span {
+  color: rgba(255, 255, 255, 0.92);
+  font-weight: 500;
+}
+
+.alert-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 160ms ease, transform 160ms ease;
+}
+
+.alert-link:hover {
+  background: rgba(255, 255, 255, 0.32);
+  transform: translateY(-1px);
+}
+
 .story-callout {
   margin: 0 0 20px;
   padding: 22px 26px;
