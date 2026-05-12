@@ -1,0 +1,7 @@
+# ignore everything in the folder
+college_scorecard_data/*
+
+# BUT keep these 2 files
+!college_scorecard_data/Most-Recent-Cohorts-Field-of-Study.csv
+!college_scorecard_data/Most-Recent-Cohorts-Institution.csv
+
