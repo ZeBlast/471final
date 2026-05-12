@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About &amp; AI Usage | After Graduation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .about-shell { width: min(860px, calc(100% - 32px)); margin: 0 auto; padding-bottom: 64px; }
+    .about-section { margin-bottom: 36px; padding: 32px 36px; border: 1px solid rgba(255,255,255,0.4); border-radius: 28px; background: var(--surface); backdrop-filter: blur(16px); box-shadow: var(--shadow); }
+    .about-section h2 { margin: 0 0 16px; font-size: 1.5rem; color: var(--ink); }
+    .about-section h3 { margin: 24px 0 8px; font-size: 1.1rem; color: var(--accent); }
+    .about-section p, .about-section li { line-height: 1.7; color: var(--muted); margin: 0 0 10px; }
+    .about-section ul { padding-left: 20px; }
+    .about-section code { background: rgba(22,32,51,0.07); border-radius: 5px; padding: 1px 6px; font-size: 0.9em; }
+    .contrib-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-top: 16px; }
+    .contrib-card { padding: 20px; border-radius: 18px; background: linear-gradient(135deg, rgba(31,138,112,0.08), rgba(240,198,107,0.10)); border: 1px solid rgba(31,138,112,0.18); }
+    .contrib-card strong { display: block; font-size: 1rem; color: var(--ink); margin-bottom: 4px; }
+    .contrib-role { display: block; font-size: 0.8rem; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; }
+    .contrib-card ul { margin: 0; padding-left: 18px; font-size: 0.9rem; }
+    .contrib-card li { margin-bottom: 5px; color: var(--muted); }
+    .ai-item { display: flex; gap: 12px; margin-bottom: 18px; align-items: flex-start; }
+    .ai-badge { flex-shrink: 0; padding: 4px 10px; border-radius: 999px; background: var(--ink); color: #fff; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+    .back-link { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 999px; background: var(--ink); color: #fff; font-weight: 700; font-size: 0.95rem; transition: transform 160ms ease; margin-bottom: 28px; }
+    .back-link:hover { transform: translateY(-1px); }
+  </style>
+</head>
+<body>
+  <div class="about-shell">
+    <header class="hero" style="padding-bottom: 8px;">
+      <nav class="topbar">
+        <div class="brand">After Graduation</div>
+        <div class="topbar-links">
+          <a href="index.html">Back to Visualization</a>
+        </div>
+      </nav>
+    </header>
+
+    <a class="back-link" href="index.html">Back to the Visualization</a>
+
+    <section class="about-section">
+      <p class="eyebrow">Project Documentation</p>
+      <h2>README</h2>
+      <p>
+        <strong>After Graduation</strong> is an interactive D3 webpage about post-college outcomes.
+        It combines College Scorecard financial data with Post-Secondary Employment Outcomes (PSEO) earnings
+        data to compare colleges, states, debt, cost, and earnings across multiple graduation cohorts.
+      </p>
+      <p>
+        The website is organized into three progressive sections: <strong>Learn</strong> (state-level trends),
+        <strong>Explore</strong> (college map), and <strong>Decide</strong> (direct college comparison).
+        Together they tell the story of which colleges pair strong first-year earnings with lower debt and
+        lower yearly cost, a question every college applicant should be asking.
+      </p>
+
+      <h3>Datasets</h3>
+      <p><strong>schools.csv</strong> provides institution identity and location data sourced from Kaggle / College Scorecard.
+        Fields used include <code>name</code>, <code>city</code>, <code>state</code>, <code>lat</code>, <code>lon</code>,
+        tuition, room cost, and book/supply cost. This file powers the college map and geographic placement.</p>
+
+      <p><strong>aid.csv</strong> provides borrowing and debt metrics from Kaggle / College Scorecard.
+        Fields used include <code>loan_principal</code>, <code>pell_grant_rate</code>, <code>federal_loan_rate</code>,
+        <code>students_with_any_loan</code>, <code>median_debt_suppressed</code>, plus parsed completer debt
+        and monthly payment fields.</p>
+
+      <p><strong>pseo_all_institutions.csv</strong> is the PSEO institution lookup. It provides the institution
+        name and ID side of the merge and is matched to Scorecard schools by state and institution name.</p>
+
+      <p><strong>pseoe_all.csv</strong> provides earnings outcomes by cohort from the U.S. Census Bureau LEHD PSEO experimental data.
+        Filtered to <code>inst_level = I</code>, <code>cip_level = A</code>, <code>degree_level = 05</code>.
+        Cohorts include the aggregate <code>0000</code> plus 2001, 2004, 2007, 2010, 2013, 2016, and 2019.
+        Note that year-5 and year-10 earnings are only populated for certain cohorts, so some dropdown selections
+        may return fewer states or schools.</p>
+
+      <p><strong>combined_pseo_all_cohorts.csv</strong> is the main runtime dataset. It merges school identity,
+        tuition, debt, aid metrics, and cohort earnings into a single file. Each row represents one institution
+        for one graduation cohort.</p>
+
+      <h3>How the Visualizations Use the Data</h3>
+      <p><strong>Section 1 - Learn:</strong> Aggregates data by state within the selected cohort and compares earnings, debt, cost, Pell grant rate, and earnings-to-debt ratio.</p>
+      <p><strong>Section 2 - Explore:</strong> Plots institutions on a US map using latitude and longitude. Colors and sizes college dots by the chosen metric. Supports zoom, pan, and click-to-compare.</p>
+      <p><strong>Section 3 - Decide:</strong> Lets the user compare schools saved from the map. Charts median earnings at Year 1 versus the completer debt baseline for each saved college.</p>
+
+      <h3>Important Notes</h3>
+      <ul>
+        <li>The app reads <code>combined_pseo_all_cohorts.csv</code> directly in the browser with D3.</li>
+        <li>The dataset does not contain cohorts after 2019.</li>
+        <li>Year-5 and year-10 earnings are not available for all cohorts. Some combinations will return fewer results.</li>
+        <li>Data sources: <a href="https://www.kaggle.com/datasets/akibmir/college-scorecard/" target="_blank" style="color:var(--teal)">Kaggle College Scorecard</a> and <a href="https://lehd.ces.census.gov/data/pseo_experimental.html" target="_blank" style="color:var(--teal)">U.S. Census Bureau LEHD PSEO</a>.</li>
+      </ul>
+    </section>
+
+    <section class="about-section">
+      <p class="eyebrow">Team</p>
+      <h2>Individual Contributions</h2>
+      <p>Each team member contributed equally to this project across data preparation, visualization development, design, and storytelling.</p>
+      <div class="contrib-grid">
+        <div class="contrib-card">
+          <strong>Shayan Sobhani</strong>
+          <span class="contrib-role">Data Pipeline and Backend</span>
+          <ul>
+            <li>Designed and wrote <code>build_combined_pseo.py</code> to merge all source CSVs</li>
+            <li>Filtered PSEO rows to bachelor's-level, institution-level cohorts</li>
+            <li>Cleaned and exported <code>combined_pseo_all_cohorts.csv</code> for runtime use</li>
+            <li>Validated dataset integrity and matched institutions across Scorecard and PSEO</li>
+          </ul>
+        </div>
+        <div class="contrib-card">
+          <strong>Elijah Verzi</strong>
+          <span class="contrib-role">Section 1 Visualizations</span>
+          <ul>
+            <li>Built the state earnings vs. debt bar chart with D3</li>
+            <li>Built the Debt, Cost, and Efficiency chart with tooltip and legend</li>
+            <li>Wrote dropdown controls and state aggregation logic in JavaScript</li>
+            <li>Authored story narrative and callout text for Section 1</li>
+          </ul>
+        </div>
+        <div class="contrib-card">
+          <strong>Imirie Billey</strong>
+          <span class="contrib-role">Section 2 Map and Interactivity</span>
+          <ul>
+            <li>Built the US college dot map using TopoJSON and D3 projections</li>
+            <li>Implemented color scale, size scale, and dynamic legend</li>
+            <li>Added hover tooltip and the college card detail panel</li>
+            <li>Added zoom and pan controls and click-to-compare functionality</li>
+          </ul>
+        </div>
+        <div class="contrib-card">
+          <strong>Jonathan Vo</strong>
+          <span class="contrib-role">Section 3 and Design</span>
+          <ul>
+            <li>Built the saved-colleges comparison panel and earnings horizon chart</li>
+            <li>Designed overall visual language, color palette, and typography</li>
+            <li>Built CSS layout including hero, panels, controls, and responsive breakpoints</li>
+            <li>Wrote section headings, hero copy, and storytelling narrative throughout the site</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="about-section">
+      <p class="eyebrow">Transparency</p>
+      <h2>AI Tool Usage</h2>
+      <p>
+        This project used AI tools to accelerate development. Below is a transparent log of where and how
+        AI assistance was applied, consistent with course policy on AI usage disclosure.
+      </p>
+
+      <div class="ai-item">
+        <span class="ai-badge">Code</span>
+        <p><strong>D3 chart scaffolding:</strong> AI was used to generate initial D3 chart
+        templates for the bar chart, scatter/dot chart, and line chart. All chart logic was then customized
+        to fit the PSEO dataset structure, metric labeling system, and interactive state management used in the project.</p>
+      </div>
+
+      <div class="ai-item">
+        <span class="ai-badge">Debugging</span>
+        <p><strong>Dropdown interaction bugs:</strong> AI was consulted to trace bugs in the dropdown
+        controls and state-filter selects that caused empty chart states. The fix involved restructuring
+        how available metrics are determined per cohort and improving user feedback when data is sparse.</p>
+      </div>
+
+      <div class="ai-item">
+        <span class="ai-badge">Data</span>
+        <p><strong>Python merge script:</strong> AI helped draft the initial structure of
+        <code>build_combined_pseo.py</code>, the script that joins College Scorecard and PSEO data.
+        All merge logic, field selection, and output column naming were reviewed and adjusted by the team
+        to match the actual CSV schemas.</p>
+      </div>
+
+      <div class="ai-item">
+        <span class="ai-badge">Writing</span>
+        <p><strong>Story narrative text:</strong> AI assisted in drafting the introductory hero paragraph
+        and section callout boxes to help frame the visualization as a narrative journey rather than a
+        plain dashboard. All text was reviewed and edited by the team.</p>
+      </div>
+
+      <div class="ai-item">
+        <span class="ai-badge">UX</span>
+        <p><strong>CSS layout and responsive design:</strong> AI was used to generate initial CSS custom
+        property definitions and responsive media query scaffolding. All final design decisions including colors,
+        spacing, border radii, and panel layout were made and refined by the team.</p>
+      </div>
+
+      <div class="ai-item">
+        <span class="ai-badge">Review</span>
+        <p><strong>Peer feedback incorporation:</strong> AI helped consolidate and prioritize peer review
+        feedback and suggested implementation approaches for adding zoom controls, tooltips, story text,
+        and this about page. The team applied and verified all changes.</p>
+      </div>
+    </section>
+  </div>
+</body>
+</html>

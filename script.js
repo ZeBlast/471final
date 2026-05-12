@@ -292,6 +292,16 @@ function renderStateEfficiencyChart(data) {
     return renderEmptySvgMessage(svg, width, height, "No state rows available for this cohort and metric.");
   }
 
+  // tooltip element (reuse or create)
+  let effTip = d3.select("#efficiency-tooltip");
+  if (effTip.empty()) {
+    effTip = d3.select(".learn-layout").append("div")
+      .attr("id", "efficiency-tooltip")
+      .attr("class", "tooltip hidden")
+      .style("position", "absolute")
+      .style("pointer-events", "none");
+  }
+
   const x = d3.scaleBand()
     .domain(data.map((d) => d.state))
     .range([margin.left, width - margin.right])
@@ -313,6 +323,28 @@ function renderStateEfficiencyChart(data) {
     .data(data)
     .join("g")
     .attr("transform", (d) => `translate(${x(d.state) + x.bandwidth() / 2},0)`);
+
+  // invisible wider hit area for tooltip
+  groups.append("rect")
+    .attr("x", -x.bandwidth() / 2)
+    .attr("y", margin.top)
+    .attr("width", x.bandwidth())
+    .attr("height", height - margin.bottom - margin.top)
+    .attr("fill", "transparent")
+    .on("mousemove", function(event, d) {
+      const [px, py] = d3.pointer(event, d3.select(".learn-layout").node());
+      effTip.classed("hidden", false)
+        .style("left", `${px + 12}px`)
+        .style("top", `${py - 20}px`)
+        .html(`
+          <strong>${d.state}</strong>
+          <p>Year-1 earnings: ${formatValue("avgY1Earnings", d.avgY1Earnings)}</p>
+          <p>Earnings-to-debt ratio: ${formatValue("avgEarningsDebtRatio", d.avgEarningsDebtRatio)}</p>
+          <p>${metricLabels[state.learnCost]}: ${formatValue(state.learnCost, d[state.learnCost])}</p>
+          <p>Schools: ${d.schoolCount}</p>
+        `);
+    })
+    .on("mouseleave", () => effTip.classed("hidden", true));
 
   groups.append("circle")
     .attr("cx", -12)
@@ -390,7 +422,19 @@ async function renderMapSection() {
     const projection = d3.geoAlbersUsa().fitSize([width, height], statesFeature);
     const path = d3.geoPath(projection);
 
-    svg.append("g")
+    // zoom behavior
+    const zoomGroup = svg.append("g").attr("class", "zoom-group");
+    const zoom = d3.zoom()
+      .scaleExtent([1, 12])
+      .on("zoom", (event) => {
+        zoomGroup.attr("transform", event.transform);
+      });
+    svg.call(zoom);
+
+    // store zoom reference for buttons
+    svg.node().__zoom_ref = zoom;
+
+    zoomGroup.append("g")
       .selectAll("path")
       .data(statesFeature.features)
       .join("path")
@@ -399,7 +443,7 @@ async function renderMapSection() {
       .attr("stroke", "rgba(22, 32, 51, 0.18)")
       .attr("stroke-width", 1);
 
-    svg.append("g")
+    zoomGroup.append("g")
       .selectAll("circle")
       .data(data)
       .join("circle")
@@ -425,10 +469,17 @@ async function renderMapSection() {
             <p>${metricLabels[state.mapMetric]}: ${formatValue(state.mapMetric, d[state.mapMetric])}</p>
             <p>${metricLabels[state.mapSize]}: ${formatValue(state.mapSize, d[state.mapSize])}</p>
             <p>Available horizons: ${availableHorizonsLabel(d)}</p>
+            <p class="meta" style="margin-top:6px;color:var(--teal)">Click to add to comparison ↓</p>
           `);
       })
       .on("click", (event, d) => addToSaved(d))
       .on("mouseleave", () => tooltip.classed("hidden", true));
+
+    // wire zoom buttons
+    d3.select("#zoom-in").on("click", () => svg.transition().call(zoom.scaleBy, 1.5));
+    d3.select("#zoom-out").on("click", () => svg.transition().call(zoom.scaleBy, 1 / 1.5));
+    d3.select("#zoom-reset").on("click", () => svg.transition().call(zoom.transform, d3.zoomIdentity));
+
   } catch (error) {
     renderEmptyMap(svg, width, height, "Map data could not be loaded. Check your internet connection for the basemap.");
   }

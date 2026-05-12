@@ -604,3 +604,62 @@ svg {
     height: 360px;
   }
 }
+
+/* ── Story callout boxes ───────────────────────────────────────────────── */
+.story-callout {
+  margin: 0 0 20px;
+  padding: 22px 26px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(31,138,112,0.08), rgba(240,198,107,0.10));
+  border: 1px solid rgba(31,138,112,0.18);
+  line-height: 1.65;
+  color: var(--ink);
+}
+.story-callout p { margin: 0 0 10px; }
+.story-callout p:last-child { margin-bottom: 0; }
+
+/* ── About button in nav ───────────────────────────────────────────────── */
+.button-nav-about {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: #fff !important;
+  font-weight: 700;
+  font-size: 0.88rem;
+  transition: transform 160ms ease, background 160ms ease;
+}
+.button-nav-about:hover { transform: translateY(-1px); background: var(--accent); }
+
+/* ── Map zoom controls ─────────────────────────────────────────────────── */
+.map-zoom-controls {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.map-zoom-controls button {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--surface-strong);
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+  transition: background 120ms ease;
+}
+.map-zoom-controls button:hover { background: var(--bg-alt); }
+
+/* ── Efficiency chart tooltip ──────────────────────────────────────────── */
+#efficiency-tooltip {
+  z-index: 20;
+}

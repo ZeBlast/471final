@@ -18,6 +18,7 @@
           <a href="#learn">Learn</a>
           <a href="#explore">Explore</a>
           <a href="#decide">Decide</a>
+          <a href="about.html" class="button-nav-about">About &amp; AI Usage</a>
         </div>
       </nav>
 
@@ -26,10 +27,10 @@
           <p class="eyebrow">Interactive D3 Storytelling</p>
           <h1>What do graduates earn after college?</h1>
           <p class="hero-text">
-            This website combines College Scorecard cost and debt data with Post-Secondary Employment Outcomes data to assist in the college 
-            research and selection process. The website is divided into 3 sections that each progressively build off of each other to enable the 
-            user to first learn relevant trends regarding earnings to debt ratios by state, then explore individual college outcome statistics in the United States,
-            and finally select and compare colleges directly with the goal of aiding in the college decision making process. 
+            Where you go to college shapes how much debt you carry for decades. But tuition sticker prices hide the real story. 
+            This tool combines College Scorecard cost and debt data with Post-Secondary Employment Outcomes earnings data to reveal 
+            something most rankings never show: which states, regions, and types of schools actually produce graduates who can 
+            afford the debt they take on. The findings are surprising, and in some cases alarming. 
           </p>
           <div class="hero-actions">
             <a class="button primary" href="#learn">Start Exploring</a>
@@ -42,21 +43,21 @@
 
         <section class="hero-panel">
           <div class="hero-stat">
-            <span class="hero-stat-label">Current build answers</span>
-            <strong>Which colleges pair stronger first-year earnings with lower debt and lower yearly cost?</strong>
+            <span class="hero-stat-label">The central finding</span>
+            <strong>New York graduates earn 3.5x their debt at year one. South Carolina graduates earn just 1.6x. Same country, vastly different outcomes.</strong>
           </div>
           <div class="hero-mini-grid">
             <article>
-              <span>National view</span>
-              <strong>Earnings and debt by cohort</strong>
+              <span>2001 to 2019</span>
+              <strong>Debt stayed flat while earnings grew. The burden is easing, slowly.</strong>
             </article>
             <article>
-              <span>Institutional view</span>
-              <strong>Colleges matched across all usable cohorts</strong>
+              <span>Low tuition schools</span>
+              <strong>Under $6k tuition cuts completer debt nearly in half vs high-tuition peers.</strong>
             </article>
             <article>
-              <span>Decision view</span>
-              <strong>Debt burden versus available earnings horizons</strong>
+              <span>The outlier</span>
+              <strong>Some schools charge $60k+ per year while graduates earn barely $40k.</strong>
             </article>
           </div>
         </section>
@@ -80,6 +81,90 @@
     </section>
 
     <main>
+
+      <!-- DATA STORY SECTION -->
+      <section class="story-section" id="story">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">The Story</p>
+            <h2>What the data actually tells us</h2>
+          </div>
+          <p>Before you explore, here is what we found by analyzing every school in this dataset. These are real conclusions drawn from the data, not assumptions.</p>
+        </div>
+
+        <div class="story-narrative-grid">
+
+          <div class="story-card story-card--highlight">
+            <p class="story-card-eyebrow">Finding 1: The New York Anomaly</p>
+            <h3>New York graduates carry the least debt relative to what they earn, by a wide margin</h3>
+            <p>
+              Among all states with at least three schools in the 2019 cohort, New York ranks first in earnings-to-debt ratio 
+              at <strong>3.54x</strong>. The driver is the CUNY system. Schools like Baruch College, Lehman College, and Hunter College 
+              charge roughly $7,000 per year in tuition, yet their graduates earn $43,000 to $54,000 in year one with completer 
+              debt as low as $10,500. Baruch graduates earn $53,849 with just $11,130 in debt, a ratio of 4.84x.
+            </p>
+            <p>
+              This is not because New York graduates earn vastly more. Their median year-1 earnings of $44,632 are close to the 
+              national median. The difference is the debt side: CUNY schools hold debt so low that graduates are almost immediately 
+              financially stable. The lesson is clear: <strong>the price of school matters more than its prestige</strong>.
+            </p>
+            <p class="story-card-action">Try it: filter the map to NY and color by earnings-to-debt ratio.</p>
+          </div>
+
+          <div class="story-card story-card--warning">
+            <p class="story-card-eyebrow">Finding 2: The South Carolina Problem</p>
+            <h3>South Carolina sits at the bottom of the debt efficiency table, and the gap is severe</h3>
+            <p>
+              South Carolina ranks last among states with sufficient data, with a median earnings-to-debt ratio of just <strong>1.59x</strong>. 
+              Several schools in the state graduate students who owe more than they can comfortably repay. 
+              Allen University graduates earn $26,970 in year one but carry $35,000 in debt, a ratio of 0.77x, meaning 
+              their debt actually exceeds a full year of earnings. Morris College and South Carolina State University 
+              sit at 1.02x and 1.06x respectively.
+            </p>
+            <p>
+              Many of these are HBCUs serving students with high Pell grant rates, meaning they are already among the most 
+              financially vulnerable students. The data suggests these schools need more support to reduce the debt burden 
+              on the students who can least afford it.
+            </p>
+            <p class="story-card-action">Try it: filter the map to SC and color by completer debt.</p>
+          </div>
+
+          <div class="story-card">
+            <p class="story-card-eyebrow">Finding 3: Low Tuition Schools Win on Efficiency</p>
+            <h3>Schools charging under $6,000 per year produce graduates with nearly half the debt of expensive schools</h3>
+            <p>
+              When we split schools into tuition bands, a striking pattern emerges. Schools with in-state tuition 
+              under $6,000 produce graduates with median completer debt of just <strong>$16,206</strong>, compared 
+              to $25,908 at schools charging over $20,000. Yet year-1 earnings are nearly identical: $44,924 versus $44,354.
+            </p>
+            <p>
+              Paying more does not get you more. The earnings-to-debt ratio at low-tuition schools reaches 3.0x, 
+              versus 1.8x at high-tuition schools. Students who attend affordable public colleges and state systems 
+              are starting their careers from a fundamentally stronger financial position, often for the same salary.
+            </p>
+            <p class="story-card-action">Try it: sort states by earnings-to-debt ratio in Section 1, then compare to total cost.</p>
+          </div>
+
+          <div class="story-card">
+            <p class="story-card-eyebrow">Finding 4: A Slow but Real Improvement</p>
+            <h3>Nationally, the debt-to-earnings burden has improved from 2001 to 2019</h3>
+            <p>
+              Looking across graduation cohorts from 2001 to 2019, median completer debt has stayed remarkably flat, 
+              hovering around $21,700 to $22,000 throughout. Meanwhile, median year-1 earnings climbed from 
+              <strong>$42,152 in 2001 to $45,123 in 2019</strong>. That pushed the earnings-to-debt ratio from 1.90x to 2.13x.
+            </p>
+            <p>
+              The narrative that student debt has spiraled out of control across all sectors is not fully supported by 
+              PSEO outcomes data for bachelor's graduates. The crisis is concentrated in specific institutions and states, 
+              not evenly distributed. The 2010 cohort saw the worst ratio at 1.86x, corresponding with post-recession job 
+              market weakness, but outcomes recovered and have improved since.
+            </p>
+            <p class="story-card-action">Try it: change the global cohort selector from 2019 to 2010 to see how the map shifts.</p>
+          </div>
+
+        </div>
+      </section>
+
       <section id="learn" class="story-section">
         <div class="section-heading">
           <div>
@@ -88,6 +173,16 @@
           </div>
           <p>
             Compare states within the selected cohort to see how earnings, borrowing, and debt burden move together.
+          </p>
+        </div>
+
+        <div class="story-callout">
+          <p>
+            The findings above show that where a school is located and what it charges matter enormously. 
+            This chart lets you verify those patterns yourself by state. Sort by earnings-to-debt ratio and 
+            watch New York float to the top and South Carolina sink toward the bottom. Switch the debt metric 
+            between completer debt and median debt to see how different populations of borrowers are affected. 
+            Note that year-5 and year-10 earnings data are only available for certain cohorts.
           </p>
         </div>
 
@@ -144,6 +239,11 @@
                 <h3>Debt, Cost, and Efficiency</h3>
                 <p>The highlighted line shows the selected cost metric; dots compare earnings-to-debt efficiency.</p>
               </div>
+              <div class="legend">
+                <span><i class="legend-swatch" style="background:var(--gold)"></i>Year-1 earnings</span>
+                <span><i class="legend-swatch" style="background:var(--teal-soft)"></i>Earnings-to-debt (scaled)</span>
+                <span><i class="legend-swatch" style="background:var(--accent)"></i>Selected cost metric</span>
+              </div>
             </div>
             <svg id="debt-chart" aria-label="State cost and efficiency chart"></svg>
           </article>
@@ -159,6 +259,21 @@
           <p>
             Inspect colleges in the selected cohort. Color can emphasize earnings or debt, while point size
             reveals scale in cost or salary.
+          </p>
+        </div>
+
+        <div class="story-callout">
+          <p>
+            <strong>Zoom in, dig deeper:</strong> Now that you know which states produce the best outcomes overall, 
+            it is time to look at individual schools. Each dot on the map is a college. Color and size encode the 
+            metrics you choose. Densely populated regions like the Northeast can be hard to read at full zoom, so 
+            use the <strong>+ / -</strong> controls or scroll to zoom, and drag to pan. Filter by state to isolate 
+            a specific region.
+          </p>
+          <p>
+            💡 <strong>Tip:</strong> Hover over any college dot to see its full profile in the panel on the right. 
+            Click a college dot to add it to your comparison list in Section 3 below, where you can directly 
+            compare debt burden against earnings trajectories side by side.
           </p>
         </div>
 
@@ -196,11 +311,16 @@
             <div class="chart-header">
               <div>
                 <h3>PSEO College Map</h3>
-                <p>Hover over a college to inspect available earnings horizons, debt, tuition, and loan burden.</p>
+                <p>Hover over a college to inspect details. Click to add to your comparison in Section 3.</p>
               </div>
               <div id="map-legend" class="map-legend"></div>
             </div>
             <div class="map-wrap">
+              <div class="map-zoom-controls">
+                <button id="zoom-in" title="Zoom in">+</button>
+                <button id="zoom-reset" title="Reset zoom">⟳</button>
+                <button id="zoom-out" title="Zoom out">−</button>
+              </div>
               <svg id="us-map" aria-label="PSEO college outcomes map"></svg>
               <div id="map-tooltip" class="tooltip hidden"></div>
             </div>
@@ -221,7 +341,24 @@
             <p class="eyebrow">Section 3</p>
             <h2>Decide: Directly Compare College Projections</h2>
           </div>
-          
+          <p>
+            You've seen state trends and explored individual schools. Now make your decision with data.
+          </p>
+        </div>
+
+        <div class="story-callout">
+          <p>
+            <strong>The moment of truth:</strong> College debt is an investment. The question is whether the earnings 
+            on the other side justify it. For each school you have added, this section charts the trajectory of median 
+            earnings at Year 1 alongside the completer debt line. Schools whose earnings curve rises quickly above 
+            the debt line are giving graduates a fast path to financial stability. Schools where earnings barely 
+            clear debt at Year 1 should prompt serious questions.
+          </p>
+          <p>
+            Click any college on the map above to add it here. You can compare as many schools as you want 
+            side by side, and toggle between in-state and out-of-state tuition to see how residency changes 
+            the picture.
+          </p>
         </div>
 
         <div class="panel projection-shell">
