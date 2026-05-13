@@ -135,11 +135,12 @@ function initializeControls() {
 
 function populateSelect(selector, values, selectedValue, formatter = (d) => d) {
   const select = d3.select(selector);
+  select.selectAll("option").remove();
   select.selectAll("option")
     .data(values)
     .join("option")
     .attr("value", (d) => d)
-    .property("selected", (d) => d === selectedValue)
+    .property("selected", (d) => String(d) === String(selectedValue))
     .text((d) => formatter(d));
 }
 

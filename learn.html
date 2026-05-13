@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Learn | College Scorecard Outcomes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="hero">
+      <nav class="topbar">
+        <div class="brand">After Graduation</div>
+        <div class="topbar-links">
+          <a href="learn.html">Learn</a>
+          <a href="explore.html">Explore</a>
+          <a href="explore.html#decide">Decide</a>
+          <a href="about.html" class="button-nav-about">About &amp; AI Usage</a>
+        </div>
+      </nav>
+    </header>
+
+    <section class="panel controls-panel note-panel">
+      <div>
+        <strong>Dataset</strong>
+        <p class="footnote">
+          This page aggregates <strong>College Scorecard</strong> institution-level rows from
+          <code>data/college_scorecard_data/Most-Recent-Cohorts-Institution.csv</code> — the same file that powers
+          <a href="explore.html">Explore</a>. Earnings use published medians after completion (years 1, 5, and 10 where reported);
+          debt uses median graduate debt for completers (<code>GRAD_DEBT_MDN</code>) and overall median debt (<code>DEBT_MDN</code>) where you pick that metric.
+          Many more schools appear here than in the earlier PSEO-only extract, so state medians are more representative.
+        </p>
+      </div>
+    </section>
+
+    <main>
+      <section id="learn" class="story-section">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Section 1</p>
+            <h2>Learn: State context from Scorecard data</h2>
+          </div>
+          <p>
+            Compare states using the same institution universe as the map: median earnings horizons, debt, cost, and efficiency.
+            Sort and swap metrics to see which regions cluster with stronger earnings relative to borrowing.
+          </p>
+        </div>
+
+        <div class="story-callout">
+          <p>
+            Because the underlying file lists most Title IV schools with location and outcome fields, sparse regions on the old PSEO-only map
+            are filled in here. Use <strong>Matched college count</strong> as the sort key when you want states ranked by how many institutions
+            contributed to the average — higher counts usually mean more stable medians.
+          </p>
+          <p>
+            When you are ready to inspect individual campuses, open <a href="explore.html">Explore</a>. To compare specific schools side by side,
+            use <a href="explore.html#decide">Decide</a> on the Explore page.
+          </p>
+        </div>
+
+        <div class="panel controls-panel">
+          <div class="control-group">
+            <label for="learn-rate">State comparison metric</label>
+            <select id="learn-rate">
+              <option value="avgY1Earnings">Median year-1 earnings</option>
+              <option value="avgY5Earnings">Median year-5 earnings</option>
+              <option value="avgY10Earnings">Median year-10 earnings</option>
+              <option value="avgEarningsDebtRatio">Earnings-to-debt ratio</option>
+              <option value="avgPellGrantRate">Pell grant rate</option>
+            </select>
+          </div>
+          <div class="control-group">
+            <label for="learn-cost">Debt / cost metric</label>
+            <select id="learn-cost">
+              <option value="avgCompleterDebt">Completer debt</option>
+              <option value="avgMedianDebt">Median debt (all borrowers)</option>
+              <option value="avgTotalCostEstimate">Estimated annual cost</option>
+            </select>
+          </div>
+          <div class="control-group">
+            <label for="learn-sort">Sort states by</label>
+            <select id="learn-sort">
+              <option value="avgY1Earnings">Median year-1 earnings</option>
+              <option value="avgY5Earnings">Median year-5 earnings</option>
+              <option value="avgY10Earnings">Median year-10 earnings</option>
+              <option value="avgEarningsDebtRatio">Earnings-to-debt ratio</option>
+              <option value="avgCompleterDebt">Completer debt</option>
+              <option value="schoolCount">Matched college count</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="learn-layout">
+          <article class="panel chart-panel">
+            <div class="chart-header">
+              <div>
+                <h3>State earnings vs. completer debt</h3>
+                <p>Top band: selected earnings metric by state. Lower band: average completer debt (same cohort file).</p>
+              </div>
+              <div class="legend">
+                <span><i class="legend-swatch employed"></i>Selected earnings metric</span>
+                <span><i class="legend-swatch unemployed"></i>Completer debt</span>
+              </div>
+            </div>
+            <svg id="employment-chart" aria-label="State earnings and debt chart"></svg>
+          </article>
+
+          <article class="panel chart-panel">
+            <div class="chart-header">
+              <div>
+                <h3>Debt, cost, and efficiency</h3>
+                <p>Gold: year-1 earnings. Teal dot: earnings-to-debt (scaled). Line: selected cost or debt metric.</p>
+              </div>
+              <div class="legend">
+                <span><i class="legend-swatch" style="background:var(--gold)"></i>Year-1 earnings</span>
+                <span><i class="legend-swatch" style="background:var(--teal-soft)"></i>Earnings-to-debt (scaled)</span>
+                <span><i class="legend-swatch" style="background:var(--accent)"></i>Selected cost metric</span>
+              </div>
+            </div>
+            <svg id="debt-chart" aria-label="State cost and efficiency chart"></svg>
+          </article>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="js/scorecard_learn_decide.js"></script>
+</body>
+</html>

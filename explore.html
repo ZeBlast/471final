@@ -15,8 +15,8 @@
       <nav class="topbar">
         <div class="brand">After Graduation</div>
         <div class="topbar-links">
-          <a href="#learn">Learn</a>
-          <a href="#explore">Explore</a>
+          <a href="learn.html">Learn</a>
+          <a href="explore.html">Explore</a>
           <a href="#decide">Decide</a>
           <a href="about.html" class="button-nav-about">About &amp; AI Usage</a>
         </div>
@@ -31,10 +31,12 @@
       <div>
         <strong>Dataset note</strong>
         <p class="footnote">
-          This page loads College Scorecard institution-level data and field-of-study data directly from CSV files in <code>data/college_scorecard_data/</code>. No Python preprocessing is required for the browser map.
+          This page loads College Scorecard institution-level data and field-of-study data directly from CSV files in <code>data/college_scorecard_data/</code>, plus PSEO outcomes in <code>data/combined_pseo_all_cohorts.csv</code>.
+          Use <strong>Graduation cohort</strong> to switch between the Scorecard snapshot (widest college coverage) and a specific PSEO graduation cohort (same extract as the main index page). The map uses institutions with coordinates; Section 3 search uses whichever dataset matches the cohort you selected.
         </p>
       </div>
     </section>
+    </header>
 
     <main>
 
@@ -99,7 +101,7 @@
             <div class="chart-header">
               <div>
                 <h3>College Scorecard Map</h3>
-                <p>Hover over a college to inspect details. Click a point to view the college profile.</p>
+                <p>Hover a college for details. Click a dot to preview it in the panel and add it to Section 3 below.</p>
               </div>
               <div id="map-legend" class="map-legend"></div>
             </div>
@@ -123,6 +125,54 @@
               <p>Hover a college point on the map to inspect details here.</p>
             </div>
           </aside>
+        </div>
+      </section>
+
+      <section id="decide" class="story-section">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Section 3</p>
+            <h2>Decide: Compare college projections</h2>
+          </div>
+          <p>
+            Charts and search follow the <strong>Graduation cohort</strong> control above: the Scorecard snapshot for maximum coverage, or a PSEO cohort for year-specific outcomes aligned with the index page.
+          </p>
+        </div>
+
+        <div class="story-callout">
+          <p>
+            <strong>From the map:</strong> choose a state, then click any dot. Each click updates the profile on the right and adds the school here (duplicates are skipped).
+          </p>
+          <p>
+            <strong>From search:</strong> the query runs over the complete parsed institution list, not only mapped points.
+          </p>
+        </div>
+
+        <div class="panel controls-panel">
+          <div class="control-group">
+            <label for="decide-search-state">Optional: limit search to state</label>
+            <select id="decide-search-state"></select>
+          </div>
+          <div class="control-group decide-search-field">
+            <label for="decide-search">Find a college</label>
+            <input id="decide-search" type="search" placeholder="Start typing a school name…" autocomplete="off">
+          </div>
+        </div>
+
+        <div id="decide-search-results" class="panel decide-search-panel"></div>
+
+        <div class="panel projection-shell">
+          <div class="projection-controls">
+            <div class="control-group">
+              <label for="projection-residency">Tuition view</label>
+              <select id="projection-residency">
+                <option value="tuitionInState">In-state tuition</option>
+                <option value="tuitionOutState">Out-of-state tuition</option>
+              </select>
+            </div>
+          </div>
+          <div id="saved-colleges"></div>
+          <div class="projection-charts"></div>
         </div>
       </section>
 

@@ -505,6 +505,61 @@ svg {
   background: #a83333;
 }
 
+#decide-search-results {
+  margin-bottom: 16px;
+}
+
+.decide-search-panel {
+  padding: 14px 18px;
+}
+
+.decide-search-field {
+  grid-column: 1 / -1;
+}
+
+.decide-search-field input {
+  width: 100%;
+  max-width: 520px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  font: inherit;
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.decide-search-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.decide-pick-btn {
+  width: 100%;
+  text-align: left;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  cursor: pointer;
+  font: inherit;
+  color: var(--ink);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.decide-pick-btn:hover {
+  border-color: var(--teal);
+  box-shadow: 0 4px 14px rgba(31, 138, 112, 0.12);
+}
+
+.decide-pick-btn .meta {
+  font-weight: 400;
+  color: var(--muted);
+}
+
 .summary-tiles {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
