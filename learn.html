@@ -27,11 +27,11 @@
       <div>
         <strong>Dataset</strong>
         <p class="footnote">
-          This page aggregates <strong>College Scorecard</strong> institution-level rows from
-          <code>data/college_scorecard_data/Most-Recent-Cohorts-Institution.csv</code> — the same file that powers
-          <a href="explore.html">Explore</a>. Earnings use published medians after completion (years 1, 5, and 10 where reported);
-          debt uses median graduate debt for completers (<code>GRAD_DEBT_MDN</code>) and overall median debt (<code>DEBT_MDN</code>) where you pick that metric.
-          Many more schools appear here than in the earlier PSEO-only extract, so state medians are more representative.
+          This page uses <strong>College Scorecard</strong> institution-level fields from
+          <code>data/college_scorecard_data/Most-Recent-Cohorts-Institution.csv</code> (same extract as
+          <a href="explore.html">Explore</a>). Earnings use the <strong>same fields as Explore</strong>:
+          <code>MD_EARN_WNE_P6</code>, <code>MD_EARN_WNE_P8</code>, and <code>MD_EARN_WNE_P10</code> (median earnings 6, 8, and 10 years after entering college).
+          Debt uses <code>GRAD_DEBT_MDN</code> (median debt for completers). Tuition on the horizontal axis uses <code>TUITIONFEE_IN</code> only (in-state published tuition), matching the Explore map’s “In-state tuition” metric. Admission rate uses <code>ADM_RATE</code>.
         </p>
       </div>
     </section>
@@ -41,19 +41,17 @@
         <div class="section-heading">
           <div>
             <p class="eyebrow">Section 1</p>
-            <h2>Learn: State context from Scorecard data</h2>
+            <h2>Earnings vs. Price, Debt, or Selectivity</h2>
           </div>
           <p>
-            Compare states using the same institution universe as the map: median earnings horizons, debt, cost, and efficiency.
-            Sort and swap metrics to see which regions cluster with stronger earnings relative to borrowing.
+            Compare median earnings (vertical) to <strong>admission rate</strong>, <strong>graduate debt</strong>, or <strong>in-state tuition</strong> (horizontal).
+            Colors distinguish <strong>Public</strong>, <strong>Private</strong>, <strong>Prestigious</strong> private nonprofits, and <strong>For-profit</strong> colleges. Earnings horizons use the same P6 / P8 / P10 fields as <a href="explore.html">Explore</a>. Use the slider, category checkboxes, state filter, and horizontal-axis menu together.
           </p>
         </div>
 
         <div class="story-callout">
           <p>
-            Because the underlying file lists most Title IV schools with location and outcome fields, sparse regions on the old PSEO-only map
-            are filled in here. Use <strong>Matched college count</strong> as the sort key when you want states ranked by how many institutions
-            contributed to the average — higher counts usually mean more stable medians.
+            <strong>Read the chart:</strong> With admission rate on the x-axis, further right means a larger share admitted. For debt and tuition, further right means higher sticker debt or published tuition. Prestigious schools are inferred from Scorecard fields; jitter reduces overplotting.
           </p>
           <p>
             When you are ready to inspect individual campuses, open <a href="explore.html">Explore</a>. To compare specific schools side by side,
@@ -61,66 +59,68 @@
           </p>
         </div>
 
-        <div class="panel controls-panel">
-          <div class="control-group">
-            <label for="learn-rate">State comparison metric</label>
-            <select id="learn-rate">
-              <option value="avgY1Earnings">Median year-1 earnings</option>
-              <option value="avgY5Earnings">Median year-5 earnings</option>
-              <option value="avgY10Earnings">Median year-10 earnings</option>
-              <option value="avgEarningsDebtRatio">Earnings-to-debt ratio</option>
-              <option value="avgPellGrantRate">Pell grant rate</option>
-            </select>
-          </div>
-          <div class="control-group">
-            <label for="learn-cost">Debt / cost metric</label>
-            <select id="learn-cost">
-              <option value="avgCompleterDebt">Completer debt</option>
-              <option value="avgMedianDebt">Median debt (all borrowers)</option>
-              <option value="avgTotalCostEstimate">Estimated annual cost</option>
-            </select>
-          </div>
-          <div class="control-group">
-            <label for="learn-sort">Sort states by</label>
-            <select id="learn-sort">
-              <option value="avgY1Earnings">Median year-1 earnings</option>
-              <option value="avgY5Earnings">Median year-5 earnings</option>
-              <option value="avgY10Earnings">Median year-10 earnings</option>
-              <option value="avgEarningsDebtRatio">Earnings-to-debt ratio</option>
-              <option value="avgCompleterDebt">Completer debt</option>
-              <option value="schoolCount">Matched college count</option>
-            </select>
+        <div class="panel controls-panel learn-filters-panel">
+          <div class="learn-filters-grid">
+            <div class="control-group learn-filter-checkboxes">
+              <span class="control-label">Show categories</span>
+              <label class="checkbox-label"><input type="checkbox" id="filter-public" checked> Public</label>
+              <label class="checkbox-label"><input type="checkbox" id="filter-private" checked> Private</label>
+              <label class="checkbox-label"><input type="checkbox" id="filter-prestigious" checked> Prestigious</label>
+              <label class="checkbox-label"><input type="checkbox" id="filter-forprofit" checked> For-profit</label>
+            </div>
+            <div class="control-group">
+              <label for="chart-x-mode">Horizontal axis</label>
+              <select id="chart-x-mode" aria-label="What to compare earnings against">
+                <option value="adm" selected>Admission rate</option>
+                <option value="debt">Graduate debt</option>
+                <option value="tuition">In-state tuition</option>
+              </select>
+            </div>
+            <div class="control-group">
+              <label for="state-filter">State</label>
+              <select id="state-filter" aria-label="Filter by state">
+                <option value="">All states</option>
+              </select>
+            </div>
+            <div class="control-group earnings-slider-inline">
+              <label for="earnings-horizon-slider">Earnings horizon</label>
+              <div class="earnings-slider-row">
+                <input type="range" id="earnings-horizon-slider" min="0" max="2" step="1" value="0" aria-valuemin="0" aria-valuemax="2" aria-valuenow="0" aria-label="Earnings years after completion or entry">
+                <span id="earnings-horizon-value" class="earnings-slider-value">1 year</span>
+              </div>
+              <p class="footnote earnings-slider-hint">Same earnings fields as Explore: P6 (6 yr), P8 (8 yr), P10 (10 yr) after entry.</p>
+            </div>
           </div>
         </div>
 
         <div class="learn-layout">
-          <article class="panel chart-panel">
+          <article class="panel chart-panel scatter-chart-panel">
             <div class="chart-header">
               <div>
-                <h3>State earnings vs. completer debt</h3>
-                <p>Top band: selected earnings metric by state. Lower band: average completer debt (same cohort file).</p>
+                <h3 id="scatter-chart-title">Median earnings by institution segment</h3>
+                <p id="scatter-chart-description">Loading…</p>
               </div>
               <div class="legend">
-                <span><i class="legend-swatch employed"></i>Selected earnings metric</span>
-                <span><i class="legend-swatch unemployed"></i>Completer debt</span>
+                <span><i class="legend-swatch" style="background: #1f8a70"></i>Public</span>
+                <span><i class="legend-swatch" style="background: #c9a227"></i>Private</span>
+                <span><i class="legend-swatch" style="background: #7c3aed"></i>Prestigious</span>
+                <span><i class="legend-swatch" style="background: #d4572f"></i>For-profit</span>
               </div>
             </div>
-            <svg id="employment-chart" aria-label="State earnings and debt chart"></svg>
+            <div class="scatter-chart-wrap">
+              <svg id="earnings-scatter-chart" aria-label="Scatter of median earnings versus selected cost or selectivity measure"></svg>
+              <div id="scatter-tooltip" class="scatter-tooltip" aria-live="polite"></div>
+            </div>
           </article>
 
           <article class="panel chart-panel">
             <div class="chart-header">
               <div>
-                <h3>Debt, cost, and efficiency</h3>
-                <p>Gold: year-1 earnings. Teal dot: earnings-to-debt (scaled). Line: selected cost or debt metric.</p>
-              </div>
-              <div class="legend">
-                <span><i class="legend-swatch" style="background:var(--gold)"></i>Year-1 earnings</span>
-                <span><i class="legend-swatch" style="background:var(--teal-soft)"></i>Earnings-to-debt (scaled)</span>
-                <span><i class="legend-swatch" style="background:var(--accent)"></i>Selected cost metric</span>
+                <h3>Summary by category</h3>
+                <p>Median earnings for the selected horizon among schools on the plot (same filters, earnings, and horizontal-axis field as the scatter).</p>
               </div>
             </div>
-            <svg id="debt-chart" aria-label="State cost and efficiency chart"></svg>
+            <div id="scatter-stats-container" class="stats-table" aria-label="Summary statistics"></div>
           </article>
         </div>
       </section>
@@ -128,6 +128,6 @@
   </div>
 
   <script src="https://d3js.org/d3.v7.min.js"></script>
-  <script src="js/scorecard_learn_decide.js"></script>
+  <script src="js/learn_earnings_scatter.js"></script>
 </body>
 </html>

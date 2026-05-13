@@ -1,10 +1,10 @@
 ﻿const metricLabels = {
-  y1P50Earnings: "Median year-1 earnings",
-  y5P50Earnings: "Median year-5 earnings",
-  y10P50Earnings: "Median year-10 earnings",
-  earningsDebtRatio: "Year-1 earnings-to-debt ratio",
-  completerDebt: "Completer debt",
-  tuitionInState: "In-state tuition",
+  y1P50Earnings: "Median earnings (6 yr after entry, P6)",
+  y5P50Earnings: "Median earnings (8 yr after entry, P8)",
+  y10P50Earnings: "Median earnings (10 yr after entry, P10)",
+  earningsDebtRatio: "Earnings-to-debt ratio (P6 ÷ completer debt)",
+  completerDebt: "Median graduate debt (completers)",
+  tuitionInState: "In-state tuition (TUITIONFEE_IN)",
   tuitionOutState: "Out-of-state tuition",
   pellGrantRate: "Pell grant rate",
   totalCostEstimate: "Estimated annual cost",
@@ -461,9 +461,9 @@ function renderEarningsHorizonChartForCollege(svg, college, debt, totalCost) {
   svg.selectAll("*").remove();
 
   const earningsPoints = [
-    { year: 1, value: college.y1P50Earnings, label: "Year 1" },
-    { year: 5, value: college.y5P50Earnings, label: "Year 5" },
-    { year: 10, value: college.y10P50Earnings, label: "Year 10" }
+    { year: 1, value: college.y1P50Earnings, label: "P6 (6 yr)" },
+    { year: 5, value: college.y5P50Earnings, label: "P8 (8 yr)" },
+    { year: 10, value: college.y10P50Earnings, label: "P10 (10 yr)" }
   ].filter((d) => d.value != null);
 
   if (!earningsPoints.length) {
