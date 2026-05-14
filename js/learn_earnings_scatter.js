@@ -1,23 +1,19 @@
 /**
- * Learn page: scatter of median earnings vs. admission rate, debt, or tuition (College Scorecard).
+ * Learn page: scatter of median earnings vs. admission rate, debt, or in-state / out-of-state tuition (College Scorecard).
  * Data: Most-Recent-Cohorts-Institution.csv
  */
 
+/** Keys and CSV columns align with `EARNINGS_SERIES` in `new_script.js` (Explore). */
 const earningsSliderLabels = [
   {
-    field: "y1P50Earnings",
-    label: "Median earnings (6 yr after entry, P6)",
-    axis: "Median earnings (6 yr after entry, P6)"
+    field: "earn1YrAfterCompMdn",
+    label: "1_yr_after_completion.median (MD_EARN_WNE_1YR)",
+    axis: "Median earnings · 1 yr after completion"
   },
   {
-    field: "y5P50Earnings",
-    label: "Median earnings (8 yr after entry, P8)",
-    axis: "Median earnings (8 yr after entry, P8)"
-  },
-  {
-    field: "y10P50Earnings",
-    label: "Median earnings (10 yr after entry, P10)",
-    axis: "Median earnings (10 yr after entry, P10)"
+    field: "earn4YrAfterCompMdn",
+    label: "4_yrs_after_completion.median (MD_EARN_WNE_4YR)",
+    axis: "Median earnings · 4 yr after completion"
   }
 ];
 
@@ -57,7 +53,7 @@ const chartModes = {
   },
   tuition: {
     key: "tuition",
-    title: "tuition",
+    title: "in-state tuition",
     xField: "tuitionInState",
     axisBottom: "In-state tuition (TUITIONFEE_IN, same as Explore map)",
     xValid: (v) => v != null && v >= 0,
@@ -67,7 +63,21 @@ const chartModes = {
       return [0, Math.max(hi * 1.06, 1000)];
     },
     formatXAxis: (xScale) => d3.axisBottom(xScale).ticks(8).tickFormat(d3.format("$,.0f")),
-    formatXTip: (v) => `Tuition: ${d3.format("$,.0f")(v)}`
+    formatXTip: (v) => `In-state tuition: ${d3.format("$,.0f")(v)}`
+  },
+  tuitionOut: {
+    key: "tuitionOut",
+    title: "out-of-state tuition",
+    xField: "tuitionOutState",
+    axisBottom: "Out-of-state tuition (TUITIONFEE_OUT)",
+    xValid: (v) => v != null && v >= 0,
+    domainFromData: (vals) => {
+      if (!vals.length) return [0, 50000];
+      const hi = d3.max(vals) ?? 0;
+      return [0, Math.max(hi * 1.06, 1000)];
+    },
+    formatXAxis: (xScale) => d3.axisBottom(xScale).ticks(8).tickFormat(d3.format("$,.0f")),
+    formatXTip: (v) => `Out-of-state tuition: ${d3.format("$,.0f")(v)}`
   }
 };
 
@@ -118,9 +128,9 @@ function parseScatterRow(row) {
     admRate: num(row.ADM_RATE),
     completerDebt: num(row.GRAD_DEBT_MDN),
     tuitionInState: num(row.TUITIONFEE_IN),
-    y1P50Earnings: num(row.MD_EARN_WNE_P6),
-    y5P50Earnings: num(row.MD_EARN_WNE_P8),
-    y10P50Earnings: num(row.MD_EARN_WNE_P10)
+    tuitionOutState: num(row.TUITIONFEE_OUT),
+    earn1YrAfterCompMdn: num(row.MD_EARN_WNE_1YR),
+    earn4YrAfterCompMdn: num(row.MD_EARN_WNE_4YR)
   };
 }
 
@@ -128,11 +138,6 @@ function getChartMode() {
   const sel = document.getElementById("chart-x-mode");
   const v = sel && sel.value;
   return chartModes[v] ? v : "adm";
-}
-
-function getX(d) {
-  const mode = chartModes[getChartMode()];
-  return d[mode.xField];
 }
 
 function categoryVisible(cat) {
@@ -235,7 +240,7 @@ function updateStatsDisplay(stats) {
   statsContainer.appendChild(table);
 }
 
-function renderScatter() {
+function renderScatter(animate = false) {
   const modeKey = getChartMode();
   const mode = chartModes[modeKey];
   const sliderIndex = scatterState.sliderIndex;
@@ -244,7 +249,7 @@ function renderScatter() {
 
   const plotRows = rows.filter((r) => rowEligibleForPlot(r, sliderIndex, modeKey));
 
-  const xVals = plotRows.map((d) => getX(d));
+  const xVals = plotRows.map((d) => d[mode.xField]);
   const [x0, x1] = mode.domainFromData(xVals);
   const margin = { top: 24, right: 28, bottom: 64, left: 72 };
   const svg = d3.select("#earnings-scatter-chart");
@@ -252,14 +257,33 @@ function renderScatter() {
   const rect = parent.getBoundingClientRect();
   const width = Math.max(rect.width, 520) - margin.left - margin.right;
   const height = 480 - margin.top - margin.bottom;
+  const fullW = width + margin.left + margin.right;
+  const fullH = height + margin.top + margin.bottom;
 
-  svg.selectAll("*").remove();
+  let root = svg.select("g.scatter-plot-root");
+  const isBootstrap = root.empty();
+  if (isBootstrap) {
+    animate = false;
+    svg.selectAll("*").remove();
+    svg.attr("width", fullW).attr("height", fullH);
+    root = svg
+      .append("g")
+      .attr("class", "scatter-plot-root")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
+    root.append("g").attr("class", "scatter-grid");
+    root.append("g").attr("class", "scatter-axis-x");
+    root.append("g").attr("class", "scatter-axis-y");
+    root.append("g").attr("class", "scatter-dots");
+    root.append("text").attr("class", "scatter-ylabel");
+    root.append("text").attr("class", "scatter-xlabel");
+  } else {
+    svg.attr("width", fullW).attr("height", fullH);
+    root.attr("transform", `translate(${margin.left},${margin.top})`);
+  }
 
-  const g = svg
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-    .append("g")
-    .attr("transform", `translate(${margin.left},${margin.top})`);
+  const tDur = 400;
+  const ease = d3.easeCubicInOut;
+  const tsel = (sel) => (animate ? sel.transition().duration(tDur).ease(ease) : sel);
 
   const xScale = d3.scaleLinear().domain([x0, x1]).range([0, width]).nice();
 
@@ -271,65 +295,96 @@ function renderScatter() {
     .range([height, 0]);
 
   const jitterPx = 5;
+  const circleCx = (d) => {
+    const xv = d[mode.xField];
+    const j = (hashUnitid(d.unitid + "x") - 0.5) * jitterPx * 2;
+    return xScale(xv) + j;
+  };
+  const circleCy = (d) => {
+    const j = (hashUnitid(d.unitid + "y") - 0.5) * jitterPx * 2;
+    return yScale(d[field]) + j;
+  };
 
-  g.append("g")
-    .attr("class", "grid")
-    .attr("opacity", 0.12)
-    .call(d3.axisLeft(yScale).tickSize(-width).tickFormat(""));
+  const grid = root.select(".scatter-grid").attr("opacity", 0.12);
+  tsel(grid).call(d3.axisLeft(yScale).tickSize(-width).tickFormat(""));
+  grid.select(".domain").remove();
 
-  g.append("g")
-    .attr("transform", `translate(0,${height})`)
-    .call(mode.formatXAxis(xScale))
-    .selectAll("text")
-    .attr("font-size", "12px");
+  const axX = root.select(".scatter-axis-x").attr("transform", `translate(0,${height})`);
+  tsel(axX).call(mode.formatXAxis(xScale));
+  axX.selectAll("text").attr("font-size", "12px");
+  axX.select(".domain").remove();
 
-  g.append("g").call(d3.axisLeft(yScale).tickFormat(d3.format("$,.0f")));
+  const axY = root.select(".scatter-axis-y");
+  tsel(axY).call(d3.axisLeft(yScale).tickFormat(d3.format("$,.0f")));
+  axY.select(".domain").remove();
 
-  g.append("text")
+  const yCap = root
+    .select(".scatter-ylabel")
     .attr("transform", "rotate(-90)")
     .attr("y", -52)
     .attr("x", -height / 2)
     .attr("text-anchor", "middle")
     .attr("fill", "var(--ink)")
     .attr("font-size", "13px")
-    .attr("font-weight", "600")
-    .text(earningsSliderLabels[sliderIndex].axis);
+    .attr("font-weight", "600");
+  tsel(yCap).text(earningsSliderLabels[sliderIndex].axis);
 
-  g.append("text")
+  const xCap = root
+    .select(".scatter-xlabel")
     .attr("x", width / 2)
     .attr("y", height + 48)
     .attr("text-anchor", "middle")
     .attr("fill", "var(--ink)")
     .attr("font-size", "13px")
-    .attr("font-weight", "600")
-    .text(mode.axisBottom);
+    .attr("font-weight", "600");
+  tsel(xCap).text(mode.axisBottom);
 
   const tip = d3.select("#scatter-tooltip");
   const fmtMoney = d3.format("$,.0f");
 
-  g.selectAll("circle")
-    .data(plotRows, (d) => d.unitid)
-    .join("circle")
-    .attr("r", 4.5)
+  const dotG = root.select(".scatter-dots");
+  const circles = dotG.selectAll("circle").data(plotRows, (d) => d.unitid);
+
+  circles
+    .exit()
+    .interrupt()
+    .transition()
+    .duration(animate ? 220 : 0)
+    .attr("r", 0)
+    .attr("fill-opacity", 0)
+    .remove();
+
+  const enter = circles
+    .enter()
+    .append("circle")
     .attr("fill", (d) => categoryColors[d.category])
-    .attr("fill-opacity", 0.5)
     .attr("stroke", "rgba(22, 32, 51, 0.35)")
     .attr("stroke-width", 0.8)
-    .attr("cx", (d) => {
-      const xv = getX(d);
-      const j = (hashUnitid(d.unitid + "x") - 0.5) * jitterPx * 2;
-      return xScale(xv) + j;
-    })
-    .attr("cy", (d) => {
-      const j = (hashUnitid(d.unitid + "y") - 0.5) * jitterPx * 2;
-      return yScale(d[field]) + j;
-    })
+    .attr("cx", circleCx)
+    .attr("cy", circleCy)
+    .attr("r", 0)
+    .attr("fill-opacity", 0);
+
+  const merged = enter.merge(circles);
+  tsel(merged)
+    .attr("cx", circleCx)
+    .attr("cy", circleCy)
+    .attr("r", 4.5)
+    .attr("fill-opacity", 0.5)
+    .attr("fill", (d) => categoryColors[d.category]);
+
+  merged
     .style("cursor", "default")
-    .on("mouseenter", function (event, d) {
+    .on("mouseenter", function (_event, d) {
+      d3.select(this).interrupt();
       d3.select(this).attr("r", 7).attr("fill-opacity", 0.95);
-      const xv = getX(d);
+      const mk = getChartMode();
+      const m = chartModes[mk];
+      const xv = d[m.xField];
+      const si = scatterState.sliderIndex;
+      const fld = earningsSliderLabels[si].field;
       tip.style("opacity", 1).html(
-        `<strong>${d.name}</strong><br>${d.state} · ${d.category}<br>${mode.formatXTip(xv)}<br>${earningsSliderLabels[sliderIndex].label}: ${fmtMoney(d[field])}`
+        `<strong>${d.name}</strong><br>${d.state} · ${d.category}<br>${m.formatXTip(xv)}<br>${earningsSliderLabels[si].label}: ${fmtMoney(d[fld])}`
       );
     })
     .on("mousemove", (event) => {
@@ -351,7 +406,14 @@ function renderScatter() {
     titleEl.textContent = `Earnings vs. ${mode.title} (${earningsSliderLabels[sliderIndex].label})`;
   }
   if (descEl) {
-    descEl.textContent = `${nShown.toLocaleString()} schools on the plot. The summary table uses the same rules, so category counts sum to ${sumTable.toLocaleString()}. Earnings and tuition match Explore (P6/P8/P10; in-state tuition only).`;
+    const tuitionNote =
+      modeKey === "tuitionOut"
+        ? "Horizontal axis: TUITIONFEE_OUT."
+        : modeKey === "tuition"
+          ? "Horizontal axis: TUITIONFEE_IN."
+          : "";
+    const base = `${nShown.toLocaleString()} schools on the plot. The summary table uses the same filters and the selected earnings horizon (the two Scorecard medians after completion used on Explore: 1 and 4 years), so category counts sum to ${sumTable.toLocaleString()}.`;
+    descEl.textContent = tuitionNote ? `${base} ${tuitionNote}` : `${base} Earnings fields match Explore.`;
   }
 
   updateStatsDisplay(stats);
@@ -374,18 +436,26 @@ function populateStateFilter(rows) {
 function initLearnScatter() {
   const slider = document.getElementById("earnings-horizon-slider");
   const sliderValue = document.getElementById("earnings-horizon-value");
+  const nHorizons = earningsSliderLabels.length;
+  const maxIdx = nHorizons - 1;
+  slider.min = "0";
+  slider.max = String(maxIdx);
+  slider.step = "1";
+  slider.setAttribute("aria-valuemin", "0");
+  slider.setAttribute("aria-valuemax", String(maxIdx));
 
   d3.csv("data/college_scorecard_data/Most-Recent-Cohorts-Institution.csv").then((raw) => {
     scatterState.rows = raw.map(parseScatterRow).filter(Boolean);
     populateStateFilter(scatterState.rows);
 
-    const rerender = () => renderScatter();
+    const rerender = () => renderScatter(false);
 
     slider.addEventListener("input", () => {
-      scatterState.sliderIndex = +slider.value;
+      scatterState.sliderIndex = Math.min(maxIdx, Math.max(0, +slider.value));
+      slider.value = String(scatterState.sliderIndex);
       slider.setAttribute("aria-valuenow", String(scatterState.sliderIndex));
       sliderValue.textContent = earningsSliderLabels[scatterState.sliderIndex].label;
-      rerender();
+      renderScatter(true);
     });
 
     ["filter-public", "filter-private", "filter-prestigious", "filter-forprofit"].forEach((id) => {
@@ -397,7 +467,9 @@ function initLearnScatter() {
 
     window.addEventListener("resize", rerender);
 
-    scatterState.sliderIndex = +slider.value;
+    scatterState.sliderIndex = Math.min(maxIdx, Math.max(0, +slider.value || 0));
+    slider.value = String(scatterState.sliderIndex);
+    slider.setAttribute("aria-valuenow", String(scatterState.sliderIndex));
     sliderValue.textContent = earningsSliderLabels[scatterState.sliderIndex].label;
     rerender();
   });

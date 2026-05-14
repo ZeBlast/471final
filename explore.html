@@ -24,15 +24,13 @@
 
 
     <section class="panel controls-panel note-panel">
-      <div class="control-group">
-        <label for="global-cohort">Graduation Cohort</label>
-        <select id="global-cohort"></select>
-      </div>
       <div>
         <strong>Dataset note</strong>
         <p class="footnote">
-          This page loads College Scorecard institution-level data and field-of-study data directly from CSV files in <code>data/college_scorecard_data/</code>, plus PSEO outcomes in <code>data/combined_pseo_all_cohorts.csv</code>.
-          Use <strong>Graduation cohort</strong> to switch between the Scorecard snapshot (widest college coverage) and a specific PSEO graduation cohort (same extract as the main index page). The map uses institutions with coordinates; Section 3 search uses whichever dataset matches the cohort you selected.
+          This page loads <strong>College Scorecard</strong> institution-level data and field-of-study data from CSV files in <code>data/college_scorecard_data/</code> (most recent institution extract). Median earnings use only <strong>after-completion</strong> measures:
+          <code>1_yr_after_completion.median</code> → <code>MD_EARN_WNE_1YR</code>;
+          <code>4_yrs_after_completion.median</code> → <code>MD_EARN_WNE_4YR</code>.
+          The map uses institutions that have coordinates; Decide search runs over the full parsed institution list.
         </p>
       </div>
     </section>
@@ -47,7 +45,7 @@
             <h2>Explore: College Outcomes Map</h2>
           </div>
           <p>
-            Inspect colleges in the selected cohort. Color can emphasize earnings or debt, while point size
+            Inspect colleges from the Scorecard extract. Color can emphasize earnings or debt, while point size
             reveals scale in cost or salary.
           </p>
         </div>
@@ -71,9 +69,8 @@
           <div class="control-group">
             <label for="map-metric">Color Colleges By</label>
             <select id="map-metric">
-              <option value="y1P50Earnings">Median earnings (6 yr after entry, P6)</option>
-              <option value="y5P50Earnings">Median earnings (8 yr after entry, P8)</option>
-              <option value="y10P50Earnings">Median earnings (10 yr after entry, P10)</option>
+              <option value="earn1YrAfterCompMdn">Median earnings, 1 yr after completion (MD_EARN_WNE_1YR)</option>
+              <option value="earn4YrAfterCompMdn" selected>Median earnings, 4 yr after completion (MD_EARN_WNE_4YR)</option>
               <option value="earningsDebtRatio">Earnings-to-debt ratio</option>
               <option value="completerDebt">Completer debt</option>
               <option value="tuitionInState">In-state tuition</option>
@@ -87,10 +84,9 @@
           <div class="control-group">
             <label for="map-size">Size Colleges By</label>
             <select id="map-size">
-              <option value="y1P50Earnings">Median earnings (6 yr after entry, P6)</option>
-              <option value="y5P50Earnings">Median earnings (8 yr after entry, P8)</option>
-              <option value="y10P50Earnings">Median earnings (10 yr after entry, P10)</option>
-              <option value="totalCostEstimate">Estimated annual cost</option>
+              <option value="earn1YrAfterCompMdn">Median earnings, 1 yr after completion (MD_EARN_WNE_1YR)</option>
+              <option value="earn4YrAfterCompMdn" selected>Median earnings, 4 yr after completion (MD_EARN_WNE_4YR)</option>
+              <option value="tuitionInState">In-state tuition (TUITIONFEE_IN, same as Learn)</option>
               <option value="completerDebt">Completer debt</option>
             </select>
           </div>
@@ -103,8 +99,8 @@
                 <h3>College Scorecard Map</h3>
                 <p>Hover a college for details. Click a dot to preview it in the panel and add it to Section 3 below.</p>
               </div>
-              <div id="map-legend" class="map-legend"></div>
             </div>
+            <div id="map-legend" class="map-legend map-legend--explore" aria-label="Map color scale"></div>
             <div id="back-to-country-container" class="back-to-country-container">
               <button id="back-to-country" title="Back to all states" class="hidden">← View all states</button>
             </div>
@@ -114,7 +110,7 @@
                 <button id="zoom-reset" title="Reset zoom">⟳</button>
                 <button id="zoom-out" title="Zoom out">−</button>
               </div>
-              <svg id="us-map" aria-label="PSEO college outcomes map"></svg>
+              <svg id="us-map" aria-label="College Scorecard institution map"></svg>
               <div id="map-tooltip" class="tooltip hidden"></div>
             </div>
           </article>
@@ -135,7 +131,7 @@
             <h2>Decide: Compare college projections</h2>
           </div>
           <p>
-            Charts and search follow the <strong>Graduation cohort</strong> control above: the Scorecard snapshot for maximum coverage, or a PSEO cohort for year-specific outcomes aligned with the index page.
+            Charts and search use the same College Scorecard institution rows as the map (most recent extract).
           </p>
         </div>
 

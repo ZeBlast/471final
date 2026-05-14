@@ -3,19 +3,17 @@
  * (same source as explore.html / new_script.js).
  */
 const metricLabels = {
-  avgY1Earnings: "Median earnings (6 yr after entry, P6)",
-  avgY5Earnings: "Median earnings (8 yr after entry, P8)",
-  avgY10Earnings: "Median earnings (10 yr after entry, P10)",
-  avgEarningsDebtRatio: "Earnings-to-debt ratio (P6 ÷ completer debt)",
+  avgY1Earnings: "Median earnings (1 yr after completion, MD_EARN_WNE_1YR)",
+  avgY5Earnings: "Median earnings (4 yr after completion, MD_EARN_WNE_4YR)",
+  avgEarningsDebtRatio: "Earnings-to-debt ratio (1 yr after completion ÷ completer debt)",
   avgPellGrantRate: "Pell grant rate",
   avgCompleterDebt: "Median graduate debt (completers)",
   avgMedianDebt: "Median debt",
   avgTotalCostEstimate: "Estimated annual cost",
   schoolCount: "Matched college count",
-  y1P50Earnings: "Median earnings (6 yr after entry, P6)",
-  y5P50Earnings: "Median earnings (8 yr after entry, P8)",
-  y10P50Earnings: "Median earnings (10 yr after entry, P10)",
-  earningsDebtRatio: "Earnings-to-debt ratio (P6 ÷ completer debt)",
+  y1P50Earnings: "Median earnings (1 yr after completion, MD_EARN_WNE_1YR)",
+  y5P50Earnings: "Median earnings (4 yr after completion, MD_EARN_WNE_4YR)",
+  earningsDebtRatio: "Earnings-to-debt ratio (1 yr after completion ÷ completer debt)",
   completerDebt: "Median graduate debt (completers)",
   tuitionInState: "In-state tuition (TUITIONFEE_IN)",
   pellGrantRate: "Pell grant rate",
@@ -50,9 +48,8 @@ function parseInstitutionRow(row) {
     medianDebtOverall: row.DEBT_MDN === "" ? null : +row.DEBT_MDN,
     monthlyPayment: row.GRAD_DEBT_MDN10YR_SUPP === "" ? null : +row.GRAD_DEBT_MDN10YR_SUPP,
     pellGrantRate: row.PCTPELL_DCS_POOLED_SUPP === "" ? null : +row.PCTPELL_DCS_POOLED_SUPP,
-    y1P50Earnings: row.MD_EARN_WNE_P6 === "" ? null : +row.MD_EARN_WNE_P6,
-    y5P50Earnings: row.MD_EARN_WNE_P8 === "" ? null : +row.MD_EARN_WNE_P8,
-    y10P50Earnings: row.MD_EARN_WNE_P10 === "" ? null : +row.MD_EARN_WNE_P10,
+    y1P50Earnings: row.MD_EARN_WNE_1YR === "" ? null : +row.MD_EARN_WNE_1YR,
+    y5P50Earnings: row.MD_EARN_WNE_4YR === "" ? null : +row.MD_EARN_WNE_4YR,
     earningsDebtRatio: null,
     gradCohort: "Most Recent"
   };
@@ -71,7 +68,6 @@ function summarizeStates(rows) {
     schoolCount: values.length,
     avgY1Earnings: d3.mean(values, (d) => d.y1P50Earnings),
     avgY5Earnings: d3.mean(values, (d) => d.y5P50Earnings),
-    avgY10Earnings: d3.mean(values, (d) => d.y10P50Earnings),
     avgEarningsDebtRatio: d3.mean(values, (d) => d.earningsDebtRatio),
     avgPellGrantRate: d3.mean(values, (d) => d.pellGrantRate),
     avgCompleterDebt: d3.mean(values, (d) => d.completerDebt),
@@ -255,7 +251,7 @@ function renderStateEfficiencyChart(data) {
         .style("top", `${py - 20}px`)
         .html(`
           <strong>${d.state}</strong>
-          <p>Year-1 earnings: ${formatValue("avgY1Earnings", d.avgY1Earnings)}</p>
+          <p>1 yr after completion (state mean): ${formatValue("avgY1Earnings", d.avgY1Earnings)}</p>
           <p>Earnings-to-debt ratio: ${formatValue("avgEarningsDebtRatio", d.avgEarningsDebtRatio)}</p>
           <p>${metricLabels[dataState.learnCost]}: ${formatValue(dataState.learnCost, d[dataState.learnCost])}</p>
           <p>Schools: ${d.schoolCount}</p>

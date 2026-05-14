@@ -309,7 +309,7 @@ select {
 }
 
 .legend,
-.map-legend {
+.map-legend:not(.map-legend--explore) {
   display: flex;
   flex-wrap: wrap;
   gap: 14px;
@@ -318,10 +318,69 @@ select {
 }
 
 .legend span,
-.map-legend span {
+.map-legend:not(.map-legend--explore) span {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+}
+
+/* Explore map: gradient scale above the map */
+.map-legend--explore {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  margin: 0 0 14px;
+  gap: 6px;
+}
+
+.map-legend--explore .map-legend-caption {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.35;
+  max-width: 36rem;
+}
+
+.map-legend--explore .map-legend-bar-wrap {
+  width: min(440px, 92%);
+  max-width: 100%;
+}
+
+.map-legend--explore .map-legend-bar {
+  height: 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(22, 32, 51, 0.14);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    0 1px 2px rgba(22, 32, 51, 0.08);
+}
+
+.map-legend--explore .map-legend-ticks {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  width: min(440px, 92%);
+  max-width: 100%;
+  gap: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.map-legend--explore .map-legend-hint {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+  text-align: center;
+  max-width: 28rem;
+  line-height: 1.4;
+  display: block;
+  width: 100%;
 }
 
 .legend-swatch {

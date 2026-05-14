@@ -1,8 +1,29 @@
-﻿const metricLabels = {
-  y1P50Earnings: "Median earnings (6 yr after entry, P6)",
-  y5P50Earnings: "Median earnings (8 yr after entry, P8)",
-  y10P50Earnings: "Median earnings (10 yr after entry, P10)",
-  earningsDebtRatio: "Earnings-to-debt ratio (P6 ÷ completer debt)",
+﻿/**
+ * Institution median earnings: College Scorecard dictionary-style paths map to CSV columns
+ * in Most-Recent-Cohorts-Institution.csv (see learn/explore dataset notes).
+ */
+const EARNINGS_SERIES = [
+  {
+    key: "earn1YrAfterCompMdn",
+    csv: "MD_EARN_WNE_1YR",
+    mapLabel: "Median earnings, 1 yr after completion (MD_EARN_WNE_1YR)",
+    lineLabel: "1 yr",
+    cardCaption: "1 yr after completion"
+  },
+  {
+    key: "earn4YrAfterCompMdn",
+    csv: "MD_EARN_WNE_4YR",
+    mapLabel: "Median earnings, 4 yr after completion (MD_EARN_WNE_4YR)",
+    lineLabel: "4 yr",
+    cardCaption: "4 yr after completion"
+  }
+];
+
+const DEFAULT_EARNINGS_METRIC = "earn4YrAfterCompMdn";
+
+const metricLabels = {
+  ...Object.fromEntries(EARNINGS_SERIES.map((s) => [s.key, s.mapLabel])),
+  earningsDebtRatio: "Earnings-to-debt ratio (1 yr after completion median ÷ completer debt)",
   completerDebt: "Median graduate debt (completers)",
   tuitionInState: "In-state tuition (TUITIONFEE_IN)",
   tuitionOutState: "Out-of-state tuition",
@@ -11,8 +32,39 @@
   monthlyPayment: "Monthly payment"
 };
 
-const COHORT_SCORECARD = "SCORECARD";
-const cohortOrder = ["0000", "2001", "2004", "2007", "2010", "2011", "2013", "2016", "2019"];
+function mapMetricOptionKeys() {
+  return [
+    ...EARNINGS_SERIES.map((s) => s.key),
+    "earningsDebtRatio",
+    "completerDebt",
+    "tuitionInState",
+    "pellGrantRate"
+  ];
+}
+
+function mapSizeOptionKeys() {
+  return [...EARNINGS_SERIES.map((s) => s.key), "tuitionInState", "completerDebt"];
+}
+
+function ensureMapMetricAndSizeValid() {
+  if (state.mapSize === "totalCostEstimate") {
+    state.mapSize = "tuitionInState";
+  }
+  const mOpts = mapMetricOptionKeys();
+  const sOpts = mapSizeOptionKeys();
+  if (!mOpts.includes(state.mapMetric)) {
+    state.mapMetric = DEFAULT_EARNINGS_METRIC;
+  }
+  if (!sOpts.includes(state.mapSize)) {
+    state.mapSize = DEFAULT_EARNINGS_METRIC;
+  }
+}
+
+function refreshMapMetricAndSizeSelects() {
+  ensureMapMetricAndSizeValid();
+  populateSelect("#map-metric", mapMetricOptionKeys(), state.mapMetric, (d) => metricLabels[d]);
+  populateSelect("#map-size", mapSizeOptionKeys(), state.mapSize, (d) => metricLabels[d]);
+}
 
 const stateFipsToMeta = {
   "01": { abbr: "AL", name: "Alabama" },
@@ -72,12 +124,10 @@ const state = {
   allRows: [],
   allInstitutions: [],
   scorecardInstitutions: [],
-  pseoAllRows: [],
   fieldOfStudyRows: [],
-  selectedCohort: COHORT_SCORECARD,
   selectedState: "All States",
-  mapMetric: "y1P50Earnings",
-  mapSize: "y1P50Earnings",
+  mapMetric: DEFAULT_EARNINGS_METRIC,
+  mapSize: DEFAULT_EARNINGS_METRIC,
   selectedCollege: null,
   stateOptions: ["All States"],
   savedColleges: [],
@@ -100,38 +150,19 @@ async function initialize() {
     .attr("fill", "var(--muted)")
     .text("Loading data...");
 
-  const [institutionRows, fieldRows, pseoRows] = await Promise.all([
+  const [institutionRows, fieldRows] = await Promise.all([
     d3.csv("data/college_scorecard_data/Most-Recent-Cohorts-Institution.csv"),
-    d3.csv("data/college_scorecard_data/Most-Recent-Cohorts-Field-of-Study.csv", parseFieldOfStudyRow),
-    d3.csv("data/combined_pseo_all_cohorts.csv")
+    d3.csv("data/college_scorecard_data/Most-Recent-Cohorts-Field-of-Study.csv", parseFieldOfStudyRow)
   ]);
 
   const parsedInstitutions = institutionRows.map(parseInstitutionRow);
   state.scorecardInstitutions = parsedInstitutions;
-  state.pseoAllRows = pseoRows.map(parsePseoRow);
   state.fieldOfStudyRows = fieldRows;
 
-  const pseoCohortOptions = [...new Set(state.pseoAllRows.map((d) => d.gradCohort))]
-    .filter((c) => c != null && c !== "")
-    .sort((a, b) => cohortOrder.indexOf(a) - cohortOrder.indexOf(b));
-  const cohortSelectValues = [COHORT_SCORECARD, ...pseoCohortOptions];
+  refreshScorecardRows();
 
-  if (!cohortSelectValues.includes(state.selectedCohort)) {
-    state.selectedCohort = COHORT_SCORECARD;
-  }
-
-  applyCohortDataset();
-
-  populateSelect("#global-cohort", cohortSelectValues, state.selectedCohort, formatExploreCohortLabel);
   populateSelect("#map-state", state.stateOptions, state.selectedState);
-  populateSelect("#map-metric", Object.keys(metricLabels), state.mapMetric, (d) => metricLabels[d]);
-  populateSelect("#map-size", [
-    "y1P50Earnings",
-    "y5P50Earnings",
-    "y10P50Earnings",
-    "totalCostEstimate",
-    "completerDebt"
-  ], state.mapSize, (d) => metricLabels[d]);
+  refreshMapMetricAndSizeSelects();
 
   initializeControls();
   initializeDecideControls();
@@ -151,22 +182,9 @@ async function initialize() {
   });
 }
 
-function formatExploreCohortLabel(value) {
-  if (value === COHORT_SCORECARD) {
-    return "Most recent (College Scorecard)";
-  }
-  return value === "0000" ? "Aggregate (0000)" : String(value);
-}
-
-function applyCohortDataset() {
-  if (state.selectedCohort === COHORT_SCORECARD) {
-    state.allInstitutions = state.scorecardInstitutions;
-    state.allRows = state.scorecardInstitutions.filter((row) => row.lat != null && row.lon != null);
-  } else {
-    const cohortRows = state.pseoAllRows.filter((d) => String(d.gradCohort) === String(state.selectedCohort));
-    state.allInstitutions = cohortRows;
-    state.allRows = cohortRows.filter((row) => row.lat != null && row.lon != null);
-  }
+function refreshScorecardRows() {
+  state.allInstitutions = state.scorecardInstitutions;
+  state.allRows = state.scorecardInstitutions.filter((row) => row.lat != null && row.lon != null);
 
   state.stateOptions = [
     "All States",
@@ -179,22 +197,11 @@ function applyCohortDataset() {
   }
 }
 
-function parsePseoRow(row) {
-  const numericFields = [
-    "lat", "lon", "tuitionInState", "tuitionOutState", "roomCost", "bookCost", "totalCostEstimate",
-    "loanPrincipal", "pellGrantRate", "federalLoanRate", "studentsWithAnyLoan", "medianDebtOverall",
-    "completerDebt", "monthlyPayment", "gradCohortYears", "y1P25Earnings", "y1P50Earnings", "y1P75Earnings",
-    "y1GradsEarn", "y1IpedsCount", "y5P25Earnings", "y5P50Earnings", "y5P75Earnings", "y5GradsEarn",
-    "y5IpedsCount", "y10P25Earnings", "y10P50Earnings", "y10P75Earnings", "y10GradsEarn", "y10IpedsCount",
-    "earningsDebtRatio"
-  ];
-
-  const parsed = { ...row };
-  for (const field of numericFields) {
-    parsed[field] = row[field] === "" ? null : +row[field];
-  }
-  parsed.unitid = row.pseoInstitutionId;
-  return parsed;
+function parseScorecardMedianEarn(row, column) {
+  const v = row[column];
+  if (v === "" || v == null || v === "PrivacySuppressed") return null;
+  const n = +v;
+  return Number.isFinite(n) ? n : null;
 }
 
 function parseInstitutionRow(row) {
@@ -214,15 +221,16 @@ function parseInstitutionRow(row) {
     medianDebtOverall: row.DEBT_MDN === "" ? null : +row.DEBT_MDN,
     monthlyPayment: row.GRAD_DEBT_MDN10YR_SUPP === "" ? null : +row.GRAD_DEBT_MDN10YR_SUPP,
     pellGrantRate: row.PCTPELL_DCS_POOLED_SUPP === "" ? null : +row.PCTPELL_DCS_POOLED_SUPP,
-    y1P50Earnings: row.MD_EARN_WNE_P6 === "" ? null : +row.MD_EARN_WNE_P6,
-    y5P50Earnings: row.MD_EARN_WNE_P8 === "" ? null : +row.MD_EARN_WNE_P8,
-    y10P50Earnings: row.MD_EARN_WNE_P10 === "" ? null : +row.MD_EARN_WNE_P10,
     earningsDebtRatio: null,
     gradCohort: "Most Recent"
   };
 
-  if (parsed.y1P50Earnings != null && parsed.completerDebt != null && parsed.completerDebt > 0) {
-    parsed.earningsDebtRatio = parsed.y1P50Earnings / parsed.completerDebt;
+  for (const s of EARNINGS_SERIES) {
+    parsed[s.key] = parseScorecardMedianEarn(row, s.csv);
+  }
+
+  if (parsed.earn1YrAfterCompMdn != null && parsed.completerDebt != null && parsed.completerDebt > 0) {
+    parsed.earningsDebtRatio = parsed.earn1YrAfterCompMdn / parsed.completerDebt;
   }
 
   return parsed;
@@ -236,30 +244,11 @@ function parseFieldOfStudyRow(row) {
     cipDesc: row.CIPDESC,
     earnMdn1yr: row.EARN_MDN_1YR === "" ? null : +row.EARN_MDN_1YR,
     earnMdn4yr: row.EARN_MDN_4YR === "" ? null : +row.EARN_MDN_4YR,
-    earnMdn5yr: row.EARN_MDN_5YR === "" ? null : +row.EARN_MDN_5YR,
     earnCount1yr: row.EARN_COUNT_WNE_1YR === "" ? 0 : +row.EARN_COUNT_WNE_1YR
   };
 }
 
 function initializeControls() {
-  d3.select("#global-cohort").on("change", (event) => {
-    state.selectedCohort = event.target.value;
-    state.selectedCollege = null;
-    state.savedColleges = [];
-    applyCohortDataset();
-    populateSelect("#map-state", state.stateOptions, state.selectedState);
-    d3.select("#map-state").property("value", state.selectedState);
-    const searchState = d3.select("#decide-search-state");
-    if (!searchState.empty()) {
-      const states = ["All States", ...Array.from(new Set(state.allInstitutions.map((d) => d.state))).sort(d3.ascending)];
-      populateSelect("#decide-search-state", states, "All States");
-    }
-    renderSavedColleges();
-    renderProjectionSection();
-    renderDecideSearchHint();
-    renderMapSection();
-  });
-
   d3.select("#map-metric").on("change", (event) => {
     state.mapMetric = event.target.value;
     renderMapSection();
@@ -407,10 +396,7 @@ function renderEmptySvgMessage(svg, width, height, message) {
 }
 
 function dataCohortCaption() {
-  if (state.selectedCohort === COHORT_SCORECARD) {
-    return "College Scorecard (most recent)";
-  }
-  return `PSEO · Graduation cohort ${state.selectedCohort}`;
+  return "College Scorecard (most recent cohort extract)";
 }
 
 function renderProjectionSection() {
@@ -422,9 +408,12 @@ function renderProjectionSection() {
 
   state.savedColleges.forEach((college) => {
     const article = container.append("article").attr("class", "chart-panel");
-    const tuition = college[state.projectionResidency] ?? college.tuitionInState ?? 0;
-    const totalCost = tuition + (college.roomCost || 0) + (college.bookCost || 0);
+    const tuitionMetric = state.projectionResidency;
+    const publishedTuition = college[tuitionMetric] ?? college.tuitionInState;
     const debt = college.completerDebt ?? college.medianDebtOverall ?? 0;
+    const tuitionTileLabel = tuitionMetric === "tuitionOutState"
+      ? "Out-of-state tuition (TUITIONFEE_OUT)"
+      : "In-state tuition (TUITIONFEE_IN)";
 
     article.append("div").attr("class", "chart-header").html(`
       <div>
@@ -439,38 +428,40 @@ function renderProjectionSection() {
         <strong>${formatValue("completerDebt", debt)}</strong>
       </div>
       <div class="summary-tile">
-        <span class="summary-label">Estimated annual cost</span>
-        <strong>${formatValue("totalCostEstimate", totalCost)}</strong>
+        <span class="summary-label">${tuitionTileLabel}</span>
+        <strong>${formatValue(tuitionMetric, publishedTuition)}</strong>
       </div>
       <div class="summary-tile">
-        <span class="summary-label">Year-1 earnings to debt</span>
+        <span class="summary-label">Earnings-to-debt (1 yr after completion ÷ completer debt)</span>
         <strong>${formatValue("earningsDebtRatio", college.earningsDebtRatio)}</strong>
       </div>
     `);
 
     const svg = article.append("svg").attr("aria-label", `Earnings chart for ${college.name}`);
-    renderEarningsHorizonChartForCollege(svg, college, debt, totalCost);
+    renderEarningsHorizonChartForCollege(svg, college, debt, publishedTuition);
   });
 }
 
-function renderEarningsHorizonChartForCollege(svg, college, debt, totalCost) {
+function renderEarningsHorizonChartForCollege(svg, college, debt, publishedTuition) {
   const width = svg.node().clientWidth;
   const height = svg.node().clientHeight;
   const margin = { top: 36, right: 24, bottom: 50, left: 72 };
 
   svg.selectAll("*").remove();
 
-  const earningsPoints = [
-    { year: 1, value: college.y1P50Earnings, label: "P6 (6 yr)" },
-    { year: 5, value: college.y5P50Earnings, label: "P8 (8 yr)" },
-    { year: 10, value: college.y10P50Earnings, label: "P10 (10 yr)" }
-  ].filter((d) => d.value != null);
+  const series = EARNINGS_SERIES;
+  const earningsPoints = series
+    .map((s) => ({
+      value: college[s.key],
+      label: s.lineLabel
+    }))
+    .filter((d) => d.value != null && Number.isFinite(d.value));
 
   if (!earningsPoints.length) {
     return renderEmptySvgMessage(svg, width, height, "No earnings horizons are available for this institution.");
   }
 
-  const cost = Number.isFinite(totalCost) && totalCost > 0 ? totalCost : null;
+  const cost = Number.isFinite(publishedTuition) && publishedTuition > 0 ? publishedTuition : null;
   const debtVal = Number.isFinite(debt) && debt > 0 ? debt : 0;
   const yMax = d3.max([
     ...earningsPoints.map((d) => d.value),
@@ -542,7 +533,7 @@ function renderEarningsHorizonChartForCollege(svg, college, debt, totalCost) {
       .attr("font-size", 11)
       .attr("fill", "var(--gold)")
       .attr("font-weight", 600)
-      .text("Est. annual cost (tuition view)");
+      .text("Published tuition (Learn / Explore)");
   }
 
   const legend = svg.append("g").attr("class", "projection-inline-legend");
@@ -551,7 +542,7 @@ function renderEarningsHorizonChartForCollege(svg, college, debt, totalCost) {
     .attr("y", 16)
     .attr("font-size", 11)
     .attr("fill", "var(--muted)")
-    .text("Teal: median earnings by year after completion. Lines use the tuition toggle for cost.");
+    .text("Teal: median earnings 1 and 4 years after completion (see dataset note). Gold: published tuition from the toggle.");
 
   svg.append("g")
     .selectAll("circle")
@@ -602,8 +593,8 @@ function populateSelect(selector, values, selectedValue, formatter = (d) => d) {
 function getFilteredInstitutions() {
   return state.allRows.filter((d) =>
     (state.selectedState === "All States" || d.state === state.selectedState) &&
-    d[state.mapMetric] != null &&
-    d[state.mapSize] != null
+    Number.isFinite(d[state.mapMetric]) &&
+    Number.isFinite(d[state.mapSize])
   );
 }
 
@@ -611,9 +602,280 @@ function getStateMeta(feature) {
   return stateFipsToMeta[String(feature.id).padStart(2, "0")];
 }
 
+/** Approximate 2-letter bold label box (px) — below this, the state polygon is too tight for the text. */
+const STATE_LABEL_MIN_BOUNDS = { w: 34, h: 15 };
+
+/** Label column inset from right edge of map (px); smaller = anchors further right, away from land. */
+const STATE_SIDEBAR_LABEL_X_INSET = 4;
+
+/** Sidebar anchors may nudge left this many px from the column for overlap only (keeps text off the map). */
+const STATE_SIDEBAR_ANCHOR_MAX_LEFT_NUDGE = 40;
+
+/** Only use a horizontal sidebar if centroid is east of this fraction of map width (avoids huge lines). */
+const STATE_SIDEBAR_MIN_CX_FRAC = 0.44;
+
+/** Skip sidebar if horizontal span would exceed this fraction of map width. */
+const STATE_SIDEBAR_MAX_LINE_FRAC = 0.52;
+
+/**
+ * Always use margin label + leader (no bounds / span checks). VT, NH, and ME stay centroid labels.
+ */
+const STATE_SIDEBAR_FORCE_LINE_STATES = new Set(["DC", "MD", "CT", "MA", "RI", "DE"]);
+
+/** Never use optional sidebar placement; label stays on centroid with no leader line. */
+const STATE_SIDEBAR_NEVER_LINE_STATES = new Set(["VT", "NH", "ME"]);
+
+/** Approximate rendered 2-letter label box for overlap checks (px; includes halo stroke). */
+const STATE_LABEL_TEXT_W = 40;
+const STATE_LABEL_TEXT_H = 20;
+const LABEL_MARGIN = 26;
+/** Max nudge for centroid labels from true centroid (px). */
+const CENTROID_LABEL_MAX_NUDGE = 28;
+
+function stateLabelFitsInsideBounds(feature, path) {
+  const b = path.bounds(feature);
+  if (!b) return true;
+  const [[x0, y0], [x1, y1]] = b;
+  const bw = x1 - x0;
+  const bh = y1 - y0;
+  return bw >= STATE_LABEL_MIN_BOUNDS.w && bh >= STATE_LABEL_MIN_BOUNDS.h;
+}
+
+/** Axis-aligned bbox for overlap tests (`text-anchor: end` → text lies left of anchor x). */
+function stateLabelTextBBox(d) {
+  const w = STATE_LABEL_TEXT_W;
+  const h = STATE_LABEL_TEXT_H;
+  const hh = h / 2;
+  if (d.isSidebar || d.textAnchor === "end") {
+    return { left: d.x - w, right: d.x, top: d.y - hh, bottom: d.y + hh };
+  }
+  const hw = w / 2;
+  return { left: d.x - hw, right: d.x + hw, top: d.y - hh, bottom: d.y + hh };
+}
+
+function stateLabelBboxesOverlap(a, b) {
+  const A = stateLabelTextBBox(a);
+  const B = stateLabelTextBBox(b);
+  return !(A.right <= B.left || B.right <= A.left || A.bottom <= B.top || B.bottom <= A.top);
+}
+
+/** Pack sidebar anchors at the right edge; small tx/ty nudges yield slightly slanted leaders. */
+function packSidebarLabelAnchors(rows, labelX, mapWidth, mapHeight) {
+  rows.sort((a, b) => a.cy - b.cy);
+  const placed = [];
+  const probe = { x: 0, y: 0, isSidebar: true, textAnchor: "end" };
+  for (const r of rows) {
+    let tx = labelX;
+    let ty = Math.max(LABEL_MARGIN, Math.min(mapHeight - LABEL_MARGIN, r.cy));
+    probe.x = tx;
+    probe.y = ty;
+    const ok = () => placed.every((p) => !stateLabelBboxesOverlap(probe, p));
+    let n = 0;
+    while (!ok() && n < 520) {
+      const phase = n % 8;
+      if (phase <= 1) ty += phase === 0 ? 4 : -4;
+      else if (phase <= 3) tx += phase === 2 ? -2 : 2;
+      else if (phase <= 5) ty += phase === 4 ? -3 : 3;
+      else tx += phase === 6 ? -2 : 2;
+      n++;
+      ty = Math.max(LABEL_MARGIN, Math.min(mapHeight - LABEL_MARGIN, ty));
+      tx = Math.min(mapWidth - 2, Math.max(labelX - STATE_SIDEBAR_ANCHOR_MAX_LEFT_NUDGE, tx));
+      probe.x = tx;
+      probe.y = ty;
+    }
+    placed.push({ x: tx, y: ty, isSidebar: true, textAnchor: "end" });
+    r.tx = tx;
+    r.ty = ty;
+  }
+}
+
+function clampSidebarLabelPosition(d, labelX, mapWidth, mapHeight) {
+  d.x = Math.min(mapWidth - 2, Math.max(labelX - STATE_SIDEBAR_ANCHOR_MAX_LEFT_NUDGE, d.x));
+  d.y = Math.max(LABEL_MARGIN, Math.min(mapHeight - LABEL_MARGIN, d.y));
+}
+
+function clampCentroidLabelPosition(d) {
+  if (STATE_SIDEBAR_NEVER_LINE_STATES.has(d.abbr)) return;
+  const cdx = d.x - d.cx;
+  const cdy = d.y - d.cy;
+  const cd = Math.hypot(cdx, cdy);
+  if (cd > CENTROID_LABEL_MAX_NUDGE && cd > 1e-6) {
+    d.x = d.cx + (cdx / cd) * CENTROID_LABEL_MAX_NUDGE;
+    d.y = d.cy + (cdy / cd) * CENTROID_LABEL_MAX_NUDGE;
+  }
+}
+
+/** Move `mov` off `fix` by full penetration along the shallower axis (`fix` stays put). */
+function pushMovableOffFixed(mov, fix, bump) {
+  const F = stateLabelTextBBox(fix);
+  const M = stateLabelTextBBox(mov);
+  const ox = Math.min(F.right, M.right) - Math.max(F.left, M.left);
+  const oy = Math.min(F.bottom, M.bottom) - Math.max(F.top, M.top);
+  if (ox <= 0 || oy <= 0) return;
+  if (ox < oy) {
+    const dir = (M.left + M.right) / 2 < (F.left + F.right) / 2 ? -1 : 1;
+    mov.x += dir * (ox + bump);
+  } else {
+    const dir = (M.top + M.bottom) / 2 < (F.top + F.bottom) / 2 ? -1 : 1;
+    mov.y += dir * (oy + bump);
+  }
+}
+
+/**
+ * Resolve overlaps using label text bboxes (sidebar = end-anchored). Uses weighted
+ * separation so centroid labels absorb more motion than sidebar when both collide.
+ */
+function resolveAllStateLabelOverlaps(layout, labelX, mapWidth, mapHeight) {
+  const n = layout.length;
+  for (let iter = 0; iter < 280; iter++) {
+    let anyOverlap = false;
+    for (let i = 0; i < n; i++) {
+      for (let j = i + 1; j < n; j++) {
+        const a = layout[i];
+        const b = layout[j];
+        if (!stateLabelBboxesOverlap(a, b)) continue;
+        const aLock = STATE_SIDEBAR_NEVER_LINE_STATES.has(a.abbr);
+        const bLock = STATE_SIDEBAR_NEVER_LINE_STATES.has(b.abbr);
+        if (aLock && bLock) continue;
+
+        anyOverlap = true;
+        const bump = 0.6;
+
+        if (aLock && !bLock) {
+          pushMovableOffFixed(b, a, bump);
+          if (b.isSidebar) clampSidebarLabelPosition(b, labelX, mapWidth, mapHeight);
+          else clampCentroidLabelPosition(b);
+          continue;
+        }
+        if (bLock && !aLock) {
+          pushMovableOffFixed(a, b, bump);
+          if (a.isSidebar) clampSidebarLabelPosition(a, labelX, mapWidth, mapHeight);
+          else clampCentroidLabelPosition(a);
+          continue;
+        }
+
+        const A = stateLabelTextBBox(a);
+        const B = stateLabelTextBBox(b);
+        const ox = Math.min(A.right, B.right) - Math.max(A.left, B.left);
+        const oy = Math.min(A.bottom, B.bottom) - Math.max(A.top, B.top);
+        if (ox <= 0 || oy <= 0) continue;
+
+        let dx = 0;
+        let dy = 0;
+        if (ox < oy) {
+          const dir = (A.left + A.right) / 2 < (B.left + B.right) / 2 ? -1 : 1;
+          dx = dir * (ox / 2 + bump);
+        } else {
+          const dir = (A.top + A.bottom) / 2 < (B.top + B.bottom) / 2 ? -1 : 1;
+          dy = dir * (oy / 2 + bump);
+        }
+
+        const mass = (d) => (d.isSidebar ? 2.5 : 1);
+        const ma = mass(a);
+        const mb = mass(b);
+        const fa = mb / (ma + mb);
+        const fb = ma / (ma + mb);
+
+        a.x += dx * 2 * fa;
+        a.y += dy * 2 * fa;
+        b.x -= dx * 2 * fb;
+        b.y -= dy * 2 * fb;
+
+        if (a.isSidebar) clampSidebarLabelPosition(a, labelX, mapWidth, mapHeight);
+        else clampCentroidLabelPosition(a);
+
+        if (b.isSidebar) clampSidebarLabelPosition(b, labelX, mapWidth, mapHeight);
+        else clampCentroidLabelPosition(b);
+      }
+    }
+    if (!anyOverlap) break;
+  }
+
+  for (const d of layout) {
+    if (d.isSidebar) clampSidebarLabelPosition(d, labelX, mapWidth, mapHeight);
+    else clampCentroidLabelPosition(d);
+  }
+
+  for (const d of layout) {
+    if (STATE_SIDEBAR_NEVER_LINE_STATES.has(d.abbr)) {
+      d.x = d.cx;
+      d.y = d.cy;
+      d.showLeader = false;
+      d.textAnchor = "middle";
+      d.isSidebar = false;
+    } else if (!d.isSidebar) {
+      d.showLeader = Math.hypot(d.x - d.cx, d.y - d.cy) > 3;
+    }
+  }
+}
+
+function layoutStateLabelPositions(features, path, mapWidth, mapHeight) {
+  const pending = [];
+  for (const feature of features) {
+    const meta = getStateMeta(feature);
+    if (!meta) continue;
+    const [cx, cy] = path.centroid(feature);
+    if (!Number.isFinite(cx) || !Number.isFinite(cy)) continue;
+    pending.push({ feature, abbr: meta.abbr, cx, cy });
+  }
+
+  const labelX = mapWidth - STATE_SIDEBAR_LABEL_X_INSET;
+  const sidebarByAbbr = new Map();
+
+  for (const d of pending.filter((x) => STATE_SIDEBAR_FORCE_LINE_STATES.has(x.abbr))) {
+    sidebarByAbbr.set(d.abbr, { ...d });
+  }
+
+  const labelXRef = labelX;
+  const optional = pending
+    .filter((d) => !sidebarByAbbr.has(d.abbr))
+    .filter((d) => !STATE_SIDEBAR_NEVER_LINE_STATES.has(d.abbr))
+    .filter((d) => !stateLabelFitsInsideBounds(d.feature, path))
+    .filter((d) => d.cx > mapWidth * STATE_SIDEBAR_MIN_CX_FRAC)
+    .filter((d) => Math.abs(labelXRef - d.cx) <= mapWidth * STATE_SIDEBAR_MAX_LINE_FRAC)
+    .sort((a, b) => a.cy - b.cy);
+
+  for (const d of optional) {
+    sidebarByAbbr.set(d.abbr, { ...d });
+  }
+
+  const sidebarRows = [...sidebarByAbbr.values()];
+  packSidebarLabelAnchors(sidebarRows, labelX, mapWidth, mapHeight);
+  const sidebarPacked = new Map(sidebarRows.map((r) => [r.abbr, { tx: r.tx, ty: r.ty }]));
+
+  const layout = pending.map((d) => {
+    const packed = sidebarPacked.get(d.abbr);
+    if (packed) {
+      return {
+        ...d,
+        x: packed.tx,
+        y: packed.ty,
+        cx: d.cx,
+        cy: d.cy,
+        showLeader: true,
+        textAnchor: "end",
+        isSidebar: true
+      };
+    }
+    return {
+      ...d,
+      x: d.cx,
+      y: d.cy,
+      cx: d.cx,
+      cy: d.cy,
+      showLeader: false,
+      textAnchor: "middle",
+      isSidebar: false
+    };
+  });
+
+  resolveAllStateLabelOverlaps(layout, labelX, mapWidth, mapHeight);
+  return layout;
+}
+
 function computeStateMetrics() {
   const stateMetrics = d3.rollup(
-    state.allRows.filter((d) => d[state.mapMetric] != null),
+    state.allRows.filter((d) => Number.isFinite(d[state.mapMetric])),
     (rows) => ({
       count: rows.length,
       metric: d3.mean(rows, (row) => row[state.mapMetric])
@@ -695,8 +957,12 @@ async function renderMapSection() {
       .scaleExtent(state.selectedState === "All States" ? [1, 12] : [1, 500])
       .on("zoom", (event) => {
         zoomGroup.attr("transform", event.transform);
+        const invK = 1 / event.transform.k;
         zoomGroup.selectAll("circle").attr("r", (d) => Math.max(0.02, radius(d[state.mapSize]) / event.transform.k));
         zoomGroup.selectAll("circle").attr("stroke-width", (d) => Math.max(0.005, 1.2 / event.transform.k));
+        zoomGroup.selectAll(".state-labels .state-label-item text").attr("transform", (d) => {
+          return `translate(${d.x},${d.y}) scale(${invK})`;
+        });
       });
 
     svg.style("touch-action", "none");
@@ -777,6 +1043,54 @@ async function renderMapSection() {
         }
       })
       .on("mouseout", () => hideTooltip(tooltip));
+
+    if (state.selectedState === "All States") {
+      const labelFeatures = statesFeature.features.filter((feature) => {
+        const meta = getStateMeta(feature);
+        if (!meta || !state.stateOptions.includes(meta.abbr)) {
+          return false;
+        }
+        const [cx, cy] = path.centroid(feature);
+        return Number.isFinite(cx) && Number.isFinite(cy);
+      });
+      const labelLayout = layoutStateLabelPositions(labelFeatures, path, width, height);
+      const labelRoot = pathGroup.append("g")
+        .attr("class", "state-labels")
+        .attr("pointer-events", "none");
+
+      const labelItem = labelRoot.selectAll("g.state-label-item")
+        .data(labelLayout)
+        .join("g")
+        .attr("class", "state-label-item");
+
+      labelItem.append("line")
+        .attr("class", "state-label-leader")
+        .attr("visibility", (d) => (d.showLeader ? "visible" : "hidden"))
+        .attr("x1", (d) => d.cx)
+        .attr("y1", (d) => d.cy)
+        .attr("x2", (d) => d.x)
+        .attr("y2", (d) => d.y)
+        .attr("stroke", "rgba(22, 32, 51, 0.42)")
+        .attr("stroke-width", 1.35)
+        .attr("stroke-linecap", "round")
+        .style("vector-effect", "non-scaling-stroke");
+
+      labelItem.append("text")
+        .attr("transform", (d) => `translate(${d.x},${d.y}) scale(1)`)
+        .attr("text-anchor", (d) => d.textAnchor)
+        .attr("dominant-baseline", "middle")
+        .attr("font-size", 12.5)
+        .attr("font-weight", 800)
+        .attr("letter-spacing", "0.06em")
+        .attr("font-family", "Source Sans 3, system-ui, sans-serif")
+        .attr("text-rendering", "geometricPrecision")
+        .attr("fill", "#162033")
+        .attr("stroke", "#ffffff")
+        .attr("stroke-width", 2.75)
+        .attr("stroke-linejoin", "round")
+        .attr("paint-order", "stroke fill")
+        .text((d) => d.abbr);
+    }
 
     if (state.selectedState !== "All States") {
       const circleGroup = zoomGroup.append("g").attr("class", "institution-group");
@@ -867,11 +1181,28 @@ function selectCollege(college) {
 }
 
 function renderLegend(colorScale, extent) {
-  d3.select("#map-legend").html(`
-    <span><i class="legend-swatch" style="background:${colorScale(extent[0])}"></i>Lower</span>
-    <span><i class="legend-swatch" style="background:${colorScale((extent[0] + extent[1]) / 2)}"></i>Mid</span>
-    <span><i class="legend-swatch" style="background:${colorScale(extent[1])}"></i>Higher</span>
-  `);
+  const legend = d3.select("#map-legend");
+  legend.selectAll("*").remove();
+  const [lowColor, highColor] = colorScale.range();
+  const metric = state.mapMetric;
+  const caption = metricLabels[metric] || metric;
+  const lo = formatValue(metric, extent[0]);
+  const hi = formatValue(metric, extent[1]);
+  const isState = state.selectedState === "All States";
+  const hint = isState
+    ? "Warm tones = lower values · Cool teal = higher values · Each state is colored by its average for the selected metric (schools in this extract with map coordinates)."
+    : "Warm tones = lower values · Cool teal = higher values · Each dot is colored by this metric for that institution.";
+
+  legend.append("p").attr("class", "map-legend-caption").text(caption);
+  legend.append("div")
+    .attr("class", "map-legend-bar-wrap")
+    .append("div")
+    .attr("class", "map-legend-bar")
+    .style("background", `linear-gradient(90deg, ${lowColor}, ${highColor})`);
+  const ticks = legend.append("div").attr("class", "map-legend-ticks");
+  ticks.append("span").attr("class", "map-legend-min").text(lo);
+  ticks.append("span").attr("class", "map-legend-max").text(hi);
+  legend.append("span").attr("class", "map-legend-hint").text(hint);
 }
 
 function updateCollegeCard(college) {
@@ -887,8 +1218,8 @@ function updateCollegeCard(college) {
           <strong>${matchingFOS[0].cipDesc || "N/A"}</strong>
         </div>
         <div class="metric-tile">
-          <span>Year-1 earnings</span>
-          <strong>${formatValue("y1P50Earnings", matchingFOS[0].earnMdn1yr)}</strong>
+          <span>Major median (1 yr after program)</span>
+          <strong>${formatValue("earn1YrAfterCompMdn", matchingFOS[0].earnMdn1yr)}</strong>
         </div>
         <div class="metric-tile">
           <span>Majors with data</span>
@@ -897,22 +1228,21 @@ function updateCollegeCard(college) {
       </div>`
     : "<p class=\"meta\">No field-of-study details available for this institution.</p>";
 
+  const earnTiles = EARNINGS_SERIES
+    .map(
+      (s) => `
+      <div class="metric-tile">
+        <span>${s.cardCaption} (${s.csv})</span>
+        <strong>${formatValue(s.key, college[s.key])}</strong>
+      </div>`
+    )
+    .join("");
+
   d3.select("#college-card").html(`
     <strong>${college.name}</strong>
     <p class="meta">${college.city || "Unknown city"}, ${college.state} · ${dataCohortCaption()}</p>
     <div class="metric-grid">
-      <div class="metric-tile">
-        <span>Median Year-1 Earnings</span>
-        <strong>${formatValue("y1P50Earnings", college.y1P50Earnings)}</strong>
-      </div>
-      <div class="metric-tile">
-        <span>Median Year-5 Earnings</span>
-        <strong>${formatValue("y5P50Earnings", college.y5P50Earnings)}</strong>
-      </div>
-      <div class="metric-tile">
-        <span>Median Year-10 Earnings</span>
-        <strong>${formatValue("y10P50Earnings", college.y10P50Earnings)}</strong>
-      </div>
+      ${earnTiles}
       <div class="metric-tile">
         <span>Completer Debt</span>
         <strong>${formatValue("completerDebt", college.completerDebt)}</strong>
