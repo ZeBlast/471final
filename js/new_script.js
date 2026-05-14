@@ -6,16 +6,16 @@ const EARNINGS_SERIES = [
   {
     key: "earn1YrAfterCompMdn",
     csv: "MD_EARN_WNE_1YR",
-    mapLabel: "Median earnings, 1 yr after completion (MD_EARN_WNE_1YR)",
-    lineLabel: "1 yr",
-    cardCaption: "1 yr after completion"
+    mapLabel: "Median earnings, 1 year after completion",
+    lineLabel: "1 year",
+    cardCaption: "Median earnings, 1 year after completion"
   },
   {
     key: "earn4YrAfterCompMdn",
     csv: "MD_EARN_WNE_4YR",
-    mapLabel: "Median earnings, 4 yr after completion (MD_EARN_WNE_4YR)",
-    lineLabel: "4 yr",
-    cardCaption: "4 yr after completion"
+    mapLabel: "Median earnings, 4 years after completion",
+    lineLabel: "4 years",
+    cardCaption: "Median earnings, 4 years after completion"
   }
 ];
 
@@ -23,7 +23,7 @@ const DEFAULT_EARNINGS_METRIC = "earn4YrAfterCompMdn";
 
 const metricLabels = {
   ...Object.fromEntries(EARNINGS_SERIES.map((s) => [s.key, s.mapLabel])),
-  earningsDebtRatio: "Earnings-to-debt ratio (1 yr after completion median ÷ completer debt)",
+  earningsDebtRatio: "Earnings-to-debt ratio (1-year median earnings ÷ completer debt)",
   completerDebt: "Median graduate debt (completers)",
   tuitionInState: "In-state tuition (TUITIONFEE_IN)",
   tuitionOutState: "Out-of-state tuition",
@@ -432,7 +432,7 @@ function renderProjectionSection() {
         <strong>${formatValue(tuitionMetric, publishedTuition)}</strong>
       </div>
       <div class="summary-tile">
-        <span class="summary-label">Earnings-to-debt (1 yr after completion ÷ completer debt)</span>
+        <span class="summary-label">Earnings-to-debt (1-year median earnings ÷ completer debt)</span>
         <strong>${formatValue("earningsDebtRatio", college.earningsDebtRatio)}</strong>
       </div>
     `);
@@ -1218,7 +1218,7 @@ function updateCollegeCard(college) {
           <strong>${matchingFOS[0].cipDesc || "N/A"}</strong>
         </div>
         <div class="metric-tile">
-          <span>Major median (1 yr after program)</span>
+          <span>Major median (1 year after program)</span>
           <strong>${formatValue("earn1YrAfterCompMdn", matchingFOS[0].earnMdn1yr)}</strong>
         </div>
         <div class="metric-tile">
@@ -1232,7 +1232,7 @@ function updateCollegeCard(college) {
     .map(
       (s) => `
       <div class="metric-tile">
-        <span>${s.cardCaption} (${s.csv})</span>
+        <span>${s.cardCaption}</span>
         <strong>${formatValue(s.key, college[s.key])}</strong>
       </div>`
     )

@@ -3,17 +3,17 @@
  * (same source as explore.html / new_script.js).
  */
 const metricLabels = {
-  avgY1Earnings: "Median earnings (1 yr after completion, MD_EARN_WNE_1YR)",
-  avgY5Earnings: "Median earnings (4 yr after completion, MD_EARN_WNE_4YR)",
-  avgEarningsDebtRatio: "Earnings-to-debt ratio (1 yr after completion ÷ completer debt)",
+  avgY1Earnings: "Median earnings, 1 year after completion",
+  avgY5Earnings: "Median earnings, 4 years after completion",
+  avgEarningsDebtRatio: "Earnings-to-debt ratio (1-year median earnings ÷ completer debt)",
   avgPellGrantRate: "Pell grant rate",
   avgCompleterDebt: "Median graduate debt (completers)",
   avgMedianDebt: "Median debt",
   avgTotalCostEstimate: "Estimated annual cost",
   schoolCount: "Matched college count",
-  y1P50Earnings: "Median earnings (1 yr after completion, MD_EARN_WNE_1YR)",
-  y5P50Earnings: "Median earnings (4 yr after completion, MD_EARN_WNE_4YR)",
-  earningsDebtRatio: "Earnings-to-debt ratio (1 yr after completion ÷ completer debt)",
+  y1P50Earnings: "Median earnings, 1 year after completion",
+  y5P50Earnings: "Median earnings, 4 years after completion",
+  earningsDebtRatio: "Earnings-to-debt ratio (1-year median earnings ÷ completer debt)",
   completerDebt: "Median graduate debt (completers)",
   tuitionInState: "In-state tuition (TUITIONFEE_IN)",
   pellGrantRate: "Pell grant rate",
@@ -251,7 +251,7 @@ function renderStateEfficiencyChart(data) {
         .style("top", `${py - 20}px`)
         .html(`
           <strong>${d.state}</strong>
-          <p>1 yr after completion (state mean): ${formatValue("avgY1Earnings", d.avgY1Earnings)}</p>
+          <p>Median earnings, 1 year after completion (state mean): ${formatValue("avgY1Earnings", d.avgY1Earnings)}</p>
           <p>Earnings-to-debt ratio: ${formatValue("avgEarningsDebtRatio", d.avgEarningsDebtRatio)}</p>
           <p>${metricLabels[dataState.learnCost]}: ${formatValue(dataState.learnCost, d[dataState.learnCost])}</p>
           <p>Schools: ${d.schoolCount}</p>

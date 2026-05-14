@@ -7,24 +7,38 @@
 const earningsSliderLabels = [
   {
     field: "earn1YrAfterCompMdn",
-    label: "1_yr_after_completion.median (MD_EARN_WNE_1YR)",
-    axis: "Median earnings · 1 yr after completion"
+    label: "Median earnings, 1 year after completion",
+    axis: "Median earnings · 1 year after completion"
   },
   {
     field: "earn4YrAfterCompMdn",
-    label: "4_yrs_after_completion.median (MD_EARN_WNE_4YR)",
-    axis: "Median earnings · 4 yr after completion"
+    label: "Median earnings, 4 years after completion",
+    axis: "Median earnings · 4 years after completion"
   }
 ];
 
+/**
+ * Scorecard CONTROL: 1 = public, 2 = private nonprofit, 3 = private for-profit.
+ * "Prestigious" is private nonprofit (2) that meets isPrestigiousPrivate (SAT/ACT/admission heuristic).
+ */
+const CAT_PUBLIC = "Public";
+const CAT_PRIVATE_NONPROFIT = "Private non-profit";
+const CAT_PRIVATE_FOR_PROFIT = "Private for-profit";
+const CAT_PRESTIGIOUS = "Prestigious";
+
 const categoryColors = {
-  Public: "#1f8a70",
-  Private: "#c9a227",
-  Prestigious: "#7c3aed",
-  "For-profit": "#d4572f"
+  [CAT_PUBLIC]: "#1f8a70",
+  [CAT_PRIVATE_NONPROFIT]: "#c9a227",
+  [CAT_PRESTIGIOUS]: "#7c3aed",
+  [CAT_PRIVATE_FOR_PROFIT]: "#d4572f"
 };
 
-const categoryOrder = ["Public", "Private", "Prestigious", "For-profit"];
+const categoryOrder = [
+  CAT_PUBLIC,
+  CAT_PRIVATE_NONPROFIT,
+  CAT_PRIVATE_FOR_PROFIT,
+  CAT_PRESTIGIOUS
+];
 
 const chartModes = {
   adm: {
@@ -99,6 +113,7 @@ function hashUnitid(unitid) {
   return (h >>> 0) / 4294967295;
 }
 
+/** Heuristic "Prestigious" bucket: private nonprofit with very high test scores or very low admission rate. */
 function isPrestigiousPrivate(row) {
   const sat = num(row.SAT_AVG) ?? num(row.SAT_AVG_ALL);
   const adm = num(row.ADM_RATE);
@@ -113,10 +128,10 @@ function parseScatterRow(row) {
   const control = row.CONTROL;
 
   let category;
-  if (control === "3") category = "For-profit";
-  else if (control === "2" && isPrestigiousPrivate(row)) category = "Prestigious";
-  else if (control === "1") category = "Public";
-  else if (control === "2") category = "Private";
+  if (control === "3") category = CAT_PRIVATE_FOR_PROFIT;
+  else if (control === "2" && isPrestigiousPrivate(row)) category = CAT_PRESTIGIOUS;
+  else if (control === "1") category = CAT_PUBLIC;
+  else if (control === "2") category = CAT_PRIVATE_NONPROFIT;
   else return null;
 
   return {
@@ -142,10 +157,10 @@ function getChartMode() {
 
 function categoryVisible(cat) {
   const id = {
-    Public: "filter-public",
-    Private: "filter-private",
-    Prestigious: "filter-prestigious",
-    "For-profit": "filter-forprofit"
+    [CAT_PUBLIC]: "filter-public",
+    [CAT_PRIVATE_NONPROFIT]: "filter-private",
+    [CAT_PRESTIGIOUS]: "filter-prestigious",
+    [CAT_PRIVATE_FOR_PROFIT]: "filter-forprofit"
   }[cat];
   const el = document.getElementById(id);
   return el ? el.checked : true;
@@ -196,48 +211,136 @@ function summarizeByCategory(rows, sliderIndex, modeKey) {
   });
 }
 
-function updateStatsDisplay(stats) {
+function pearsonCorrelation(xs, ys) {
+  const n = xs.length;
+  if (n < 3) return null;
+  const mx = d3.mean(xs);
+  const my = d3.mean(ys);
+  let num = 0;
+  let dx = 0;
+  let dy = 0;
+  for (let i = 0; i < n; i++) {
+    const vx = xs[i] - mx;
+    const vy = ys[i] - my;
+    num += vx * vy;
+    dx += vx * vx;
+    dy += vy * vy;
+  }
+  const den = Math.sqrt(dx * dy);
+  if (den === 0 || !Number.isFinite(den)) return null;
+  const r = num / den;
+  return Number.isFinite(r) ? r : null;
+}
+
+function wrapVizTrendStack(hed, dek, bodyInnerHtml) {
+  return `
+    <div class="viz-trend-stack">
+      <p class="viz-trend-hed">${hed}</p>
+      ${dek ? `<p class="viz-trend-dek">${dek}</p>` : ""}
+      <div class="viz-trend-body">${bodyInnerHtml}</div>
+    </div>`;
+}
+
+function buildTrendsNarrative(stats, plotRows, mode, field, earningsLabel) {
+  const fmtMoney = (x) => `$${Math.round(x).toLocaleString("en-US")}`;
+  const nShown = plotRows.length;
+  const xt = mode.title;
+
+  if (nShown === 0) {
+    return wrapVizTrendStack(
+      "The filters erased the canvas.",
+      "Add categories back, set state to “All states”, or switch the horizontal axis so enough colleges qualify.",
+      '<p class="viz-note">Each dot needs earnings on the selected horizon plus a valid value for the current x-axis field.</p>'
+    );
+  }
+
+  const sumC = Math.max(1, d3.sum(stats, (s) => s.count));
+  const withData = stats.filter((s) => s.count > 0);
+  const biggest = withData.length ? d3.greatest(withData, (s) => s.count) : null;
+
+  const xs = [];
+  const ys = [];
+  for (const r of plotRows) {
+    const x = r[mode.xField];
+    const y = r[field];
+    if (x == null || y == null || !Number.isFinite(x) || !Number.isFinite(y)) continue;
+    xs.push(x);
+    ys.push(y);
+  }
+  const rLin = xs.length >= 25 ? pearsonCorrelation(xs, ys) : null;
+
+  const minN = 5;
+  const rich = stats.filter((s) => s.count >= minN && s.median != null);
+  let top;
+  let bottom;
+  if (rich.length >= 2) {
+    const sorted = [...rich].sort((a, b) => b.median - a.median);
+    top = sorted[0];
+    bottom = sorted[sorted.length - 1];
+  }
+
+  let hed = "";
+  let dek = "";
+  const extra = [];
+
+  if (top && bottom && top.group !== bottom.group) {
+    hed = `${top.group} leads the pay ladder here; ${bottom.group} anchors the bottom.`;
+    dek = `Median spread on ${earningsLabel.toLowerCase()} is about ${fmtMoney(top.median - bottom.median)} between those segments (each needs at least ${minN} schools).`;
+  }
+
+  if (!hed && rLin != null && Math.abs(rLin) >= 0.12) {
+    const cap = xt.charAt(0).toUpperCase() + xt.slice(1);
+    hed =
+      rLin > 0
+        ? `${cap} and paychecks climb in the same direction in this slice.`
+        : `Where ${xt} runs higher, median earnings skew lower in this window.`;
+    dek = `Rough correlation ${rLin.toFixed(2)} across ${xs.length.toLocaleString()} campuses (${earningsLabel}).`;
+  }
+
+  if (!hed && biggest && biggest.count > 0) {
+    const pct = Math.round((biggest.count / sumC) * 100);
+    hed = `${biggest.group} paints most of the portrait.`;
+    dek = `${pct}% of the ${nShown.toLocaleString()} visible dots belong to that segment.`;
+  }
+
+  if (!hed) {
+    hed = `${nShown.toLocaleString()} institutions made the cut for this pass.`;
+    dek = biggest ? `${biggest.group} still contributes the largest single bloc.` : "";
+  }
+
+  if (top && bottom && top.group !== bottom.group && !(dek && dek.includes("Median spread"))) {
+    extra.push(
+      `<p>Among segments with enough data, ${top.group} medians near ${fmtMoney(top.median)} versus ${fmtMoney(bottom.median)} for ${bottom.group}.</p>`
+    );
+  }
+
+  if (rLin != null && xs.length >= 25) {
+    if (Math.abs(rLin) < 0.12 && !(dek && dek.includes("Rough correlation"))) {
+      extra.push(
+        `<p>${xt.charAt(0).toUpperCase() + xt.slice(1)} and earnings barely line up as a straight story (r ≈ ${rLin.toFixed(2)}), so the cloud stays open.</p>`
+      );
+    } else if (Math.abs(rLin) >= 0.12 && !(dek && dek.includes("Rough correlation"))) {
+      extra.push(
+        `<p>Correlation with ${xt} sits near ${rLin.toFixed(2)} on ${xs.length.toLocaleString()} points—context, not a verdict on any one campus.</p>`
+      );
+    }
+  } else if (xs.length >= 8 && xs.length < 25) {
+    extra.push(
+      `<p>Only ${xs.length} colleges qualify—too thin to lean on a single slope until you widen filters.</p>`
+    );
+  }
+
+  extra.push(
+    '<p class="viz-note">Headline updates live with your controls. “Prestigious” is a private non-profit subset from Scorecard SAT/ACT/admissions heuristics—not an official label.</p>'
+  );
+
+  return wrapVizTrendStack(hed, dek, extra.join(""));
+}
+
+function updateTrendsNarrative(stats, plotRows, mode, field, earningsLabel) {
   const statsContainer = document.getElementById("scatter-stats-container");
-  statsContainer.innerHTML = "";
-
-  const table = document.createElement("table");
-  table.style.width = "100%";
-  table.style.borderCollapse = "collapse";
-  table.style.fontSize = "14px";
-
-  const headerRow = table.insertRow();
-  ["Category", "Count", "Median", "Mean", "Min", "Max", "Q1–Q3"].forEach((header) => {
-    const cell = headerRow.insertCell();
-    cell.textContent = header;
-    cell.style.padding = "10px";
-    cell.style.borderBottom = "1px solid rgba(22, 32, 51, 0.1)";
-    cell.style.fontWeight = "600";
-    cell.style.backgroundColor = "rgba(31, 138, 112, 0.05)";
-  });
-
-  stats.forEach((d) => {
-    const row = table.insertRow();
-    const fmt = (x) =>
-      x == null ? "—" : `$${x.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
-    const cells = [
-      d.group,
-      d.count,
-      fmt(d.median),
-      fmt(d.mean),
-      fmt(d.min),
-      fmt(d.max),
-      d.q1 == null ? "—" : `${fmt(d.q1)}–${fmt(d.q3)}`
-    ];
-    cells.forEach((cellText, idx) => {
-      const cell = row.insertCell();
-      cell.textContent = cellText;
-      cell.style.padding = "10px";
-      cell.style.borderBottom = "1px solid rgba(22, 32, 51, 0.05)";
-      if (idx === 0) cell.style.fontWeight = "500";
-    });
-  });
-
-  statsContainer.appendChild(table);
+  if (!statsContainer) return;
+  statsContainer.innerHTML = buildTrendsNarrative(stats, plotRows, mode, field, earningsLabel);
 }
 
 function renderScatter(animate = false) {
@@ -398,25 +501,24 @@ function renderScatter(animate = false) {
 
   const nShown = plotRows.length;
   const stats = summarizeByCategory(rows, sliderIndex, modeKey);
-  const sumTable = d3.sum(stats, (s) => s.count);
 
   const titleEl = document.getElementById("scatter-chart-title");
   const descEl = document.getElementById("scatter-chart-description");
   if (titleEl) {
-    titleEl.textContent = `Earnings vs. ${mode.title} (${earningsSliderLabels[sliderIndex].label})`;
+    titleEl.textContent = `Earnings vs. ${mode.title}`;
   }
   if (descEl) {
     const tuitionNote =
       modeKey === "tuitionOut"
-        ? "Horizontal axis: TUITIONFEE_OUT."
+        ? "Horizontal axis uses out-of-state tuition."
         : modeKey === "tuition"
-          ? "Horizontal axis: TUITIONFEE_IN."
+          ? "Horizontal axis uses in-state tuition."
           : "";
-    const base = `${nShown.toLocaleString()} schools on the plot. The summary table uses the same filters and the selected earnings horizon (the two Scorecard medians after completion used on Explore: 1 and 4 years), so category counts sum to ${sumTable.toLocaleString()}.`;
-    descEl.textContent = tuitionNote ? `${base} ${tuitionNote}` : `${base} Earnings fields match Explore.`;
+    const base = `${nShown.toLocaleString()} campuses after filters. Vertical axis: ${earningsSliderLabels[sliderIndex].label}. Horizontal axis: ${mode.title}.`;
+    descEl.textContent = tuitionNote ? `${base} ${tuitionNote}` : base;
   }
 
-  updateStatsDisplay(stats);
+  updateTrendsNarrative(stats, plotRows, mode, field, earningsSliderLabels[sliderIndex].label);
 }
 
 function populateStateFilter(rows) {
@@ -458,7 +560,7 @@ function initLearnScatter() {
       renderScatter(true);
     });
 
-    ["filter-public", "filter-private", "filter-prestigious", "filter-forprofit"].forEach((id) => {
+    ["filter-public", "filter-private", "filter-forprofit", "filter-prestigious"].forEach((id) => {
       document.getElementById(id).addEventListener("change", rerender);
     });
 
