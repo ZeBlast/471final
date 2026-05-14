@@ -32,7 +32,44 @@ Open `index.html` in a modern browser from a local or static server (the page lo
 - Toggle in-state vs out-of-state tuition for the comparison charts.
 - For each saved school: summary tiles (debt, tuition, earnings-to-debt) and a line chart of the two earnings horizons with horizontal reference lines for completer debt and published tuition.
 
-## Runtime datasets (required)
+## Overall Development Process
+
+We used AI to support all stages of the development process.
+After the proposal, we developed an initial website draft with three sections to interact with a subset of the data.
+Once this was in a usable state and reviewed during the peer review session, the dataset was switched over to the full one.
+An About section was added to the webpage to provide additional information.
+Each section was developed and finalized one after another, starting with Learn, then Explore, and finally Compare.
+
+### Team Contributions (Also shown on the About page)
+
+We all worked together throughout the entire process while also focusing on different parts.
+
+Shayan Sobhani - Data Integration/ Analysis & about.html
+- Created the about.html webpage and helped with the styling portions of the webpage.
+- Documented project structure and data preparation within the multiple datasets we found from the College Scorecard.
+- Cross tested load performance, missing values, and map eligibility.
+- Helped with the compare section of the webpage and the functinality of how the UI worked, as before we had a different version.
+- Helped navigate Cursor and Claude to generate the code for the maps and figure out which datasets align the best with the story that we wanted to tell.
+
+Elijah Verzi - Data Analysis and Webpage Development
+- Researched various potential datasets and identified the College Scorecard as the most relevant and comprehensive source of data for this project.
+- Developed the general layout and narrative of the webpage, landing on a Learn, Explore, and Compare structure that would be intuitive and beneficial for the user.
+- Analyzed the College Scorecard dataset documentation to determine the necessary data fields to extract and integrate into the project.
+- Guided Cursor to generate the initial code for the scatter plot, and reviewed and adjusted the code to ensure it met our needs and requirements.
+
+Imirie Billey - Data Integration & Visualization Functionality
+- Designed code for different iterations of the Learn and Compare sections.
+- Ensured the Learn and Compare sections are well-integrated and provide a good user experience.
+- Integrated the final dataset we curated into the map and card sections, ensuring that the data is accurately represented and visually appealing.
+- Expanded the functionality of the Compare section to include additional features and improvements.
+- Tested the map and card sections for functionality, usability, and performance, making adjustments as needed to optimize the user experience.
+
+Jonathan Vo - Initial Webpage Setup, Explore Iteration
+- Implemented the initial data loading, visualizations, and page layout for the Learn, Explore, and Compare sections agreed upon using a subset of the final dataset.
+- Iterate through the design of the Explore map visualization along with its functional connection to the Compare section through Codex prompting.
+- Tweaked how data is served to support loading the complete College Scorecard dataset on GitHub Pages.
+
+## Dataset Files
 
 These files power `index.html` as shipped. They live in `data/college_scorecard_data/` and are read directly in the browser.
 
@@ -87,10 +124,6 @@ Program-level extract keyed by `UNITID`. Used to enrich the **Explore** detail c
 
 **Script:** `js/app_loading.js` — coordinates dismissal of the full-page overlay once the scatter and main bundle have finished their first CSV loads.
 
-## Optional / repository-only assets
-
-The `data/` folder may also contain older or auxiliary tables (for example `schools.csv`, `aid.csv`, PSEO extracts, or `combined_pseo_*.csv`) and `build_combined_pseo.py`. Those artifacts support alternate analyses or coursework workflows; **the published `index.html` visualization does not load them**. If you use them, document your own column mapping separately.
-
 ## Source and updates
 
 - **College Scorecard data:** [https://collegescorecard.ed.gov/data/](https://collegescorecard.ed.gov/data/)
@@ -102,4 +135,3 @@ The `data/` folder may also contain older or auxiliary tables (for example `scho
 |------|---------|
 | `index.html` | Main visualization (Learn, Explore, Compare) |
 | `about.html` | README-style documentation, team contributions, AI disclosure |
-| `css/styles.css` | Shared styling for index and about |
