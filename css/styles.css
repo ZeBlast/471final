@@ -1,8 +1,8 @@
 :root {
-  --bg: #f5efe3;
-  --bg-alt: #fcf8f1;
-  --surface: rgba(255, 252, 245, 0.84);
-  --surface-strong: #fffdf8;
+  --bg: #dfd4c4;
+  --bg-alt: #f2ebe0;
+  --surface: rgba(255, 252, 245, 0.9);
+  --surface-strong: #faf6ef;
   --ink: #162033;
   --muted: #5a6172;
   --line: rgba(22, 32, 51, 0.12);
@@ -31,10 +31,7 @@ body {
   margin: 0;
   font-family: "Source Sans 3", sans-serif;
   color: var(--ink);
-  background:
-    radial-gradient(circle at top left, rgba(240, 198, 107, 0.35), transparent 28%),
-    radial-gradient(circle at 85% 10%, rgba(31, 138, 112, 0.18), transparent 24%),
-    linear-gradient(180deg, #efe5d2 0%, #f8f3ea 48%, #f4eee4 100%);
+  background: #ebe4d8;
 }
 
 a {
