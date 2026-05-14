@@ -25,6 +25,7 @@
 
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: calc(env(safe-area-inset-top, 0px) + 3.75rem);
 }
 
 body {
@@ -32,6 +33,49 @@ body {
   font-family: "Source Sans 3", sans-serif;
   color: var(--ink);
   background: #ebe4d8;
+}
+
+body.app-loading-active {
+  overflow: hidden;
+}
+
+.app-loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  box-sizing: border-box;
+  background: rgba(235, 228, 216, 0.78);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: opacity 0.35s ease, visibility 0.35s ease;
+}
+
+.app-loading-overlay--hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.app-loading-overlay__panel {
+  max-width: min(420px, 100%);
+  padding: 22px 26px;
+  border-radius: 16px;
+  border: 1px solid rgba(22, 32, 51, 0.12);
+  background: rgba(255, 252, 245, 0.92);
+  box-shadow: 0 12px 40px rgba(22, 32, 51, 0.12);
+  text-align: center;
+}
+
+.app-loading-overlay__message {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--ink);
 }
 
 a {
@@ -1005,18 +1049,31 @@ body.page-learn .page-shell--article,
 body.page-explore .page-shell--article {
   width: min(1400px, calc(100% - 24px));
   margin: 0 auto;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 3.75rem);
   padding-bottom: 72px;
 }
 
 body.page-learn .viz-nav,
 body.page-explore .viz-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  box-sizing: border-box;
+  z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 14px 0 28px;
-  margin-bottom: 8px;
+  margin: 0;
+  padding-top: calc(12px + env(safe-area-inset-top, 0px));
+  padding-bottom: 16px;
+  padding-left: max(12px, calc((100vw - min(1400px, 100vw - 24px)) / 2));
+  padding-right: max(12px, calc((100vw - min(1400px, 100vw - 24px)) / 2));
   border-bottom: 1px solid rgba(22, 32, 51, 0.14);
+  background: #ebe4d8;
+  box-shadow: 0 4px 18px rgba(22, 32, 51, 0.07);
 }
 
 body.page-learn .viz-nav__brand,

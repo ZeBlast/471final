@@ -9,18 +9,30 @@
   <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..800;1,6..72,400..800&family=Source+Sans+3:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
 </head>
-<body class="page-learn page-explore">
-  <div class="page-shell page-shell--article">
-    <header class="viz-nav">
-      <div class="viz-nav__brand">After Graduation</div>
-      <nav class="viz-nav__links" aria-label="Sections">
-        <a href="#learn">Learn</a>
-        <a href="#explore">Explore</a>
-        <a href="#decide">Compare</a>
-        <a href="about.html">About</a>
-      </nav>
-    </header>
+<body class="page-learn page-explore app-loading-active">
+  <div
+    id="app-loading-overlay"
+    class="app-loading-overlay"
+    role="status"
+    aria-live="polite"
+    aria-busy="true"
+    aria-label="Loading application"
+  >
+    <div class="app-loading-overlay__panel">
+      <p class="app-loading-overlay__message">Loading College Scorecard data…</p>
+    </div>
+  </div>
+  <header class="viz-nav">
+    <div class="viz-nav__brand">After Graduation</div>
+    <nav class="viz-nav__links" aria-label="Sections">
+      <a href="#learn">Learn</a>
+      <a href="#explore">Explore</a>
+      <a href="#decide">Compare</a>
+      <a href="about.html">About</a>
+    </nav>
+  </header>
 
+  <div class="page-shell page-shell--article">
     <main>
 
       <article class="viz-article" id="learn">
@@ -32,7 +44,7 @@
             The U.S. Department of Education College Scorecard publishes median earnings for students after they leave college, which can be an indicator for whether a degree pays off. This webpage starts with those earnings plotted against admissions, debt, and tuition so you can see where institutions cluster and who sits above or below the pattern. From there, the same underlying file is mapped across the country, then narrowed again so you can pull a short list of schools into a side-by-side comparison.
           </p>
           <p class="viz-byline">
-            <span>Source:</span> U.S. Department of Education College Scorecard, most-recent institution file. Map and comparison below use the same extract.
+            <span>Source:</span> U.S. Department of Education College Scorecard, most-recent institution data.
           </p>
         </header>
 
@@ -42,7 +54,7 @@
           </p>
         </aside>
 
-        <h1 class="viz-headline"><span class="viz-section-prefix">Learn:</span> <span class="viz-section-rest">Identify institution trends of post-college earnings</span></h1>
+        <h1 class="viz-headline"><span class="viz-section-prefix">Learn:</span> <span class="viz-section-rest">Identify institution trends of post-college earnings.</span></h1>
 
         <section class="viz-trend-section" aria-label="How to read this chart">
           <div class="viz-trend-host">
@@ -232,6 +244,7 @@
 
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
+  <script src="js/app_loading.js"></script>
   <script src="js/learn_earnings_scatter.js"></script>
   <script src="js/new_script.js"></script>
 </body>

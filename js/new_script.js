@@ -139,47 +139,47 @@ const formatCurrency = d3.format("$,.0f");
 initialize();
 
 async function initialize() {
-  // Show initial loading indicator
   const svg = d3.select("#us-map");
   svg.selectAll("*").remove();
-  svg.append("text")
-    .attr("x", "50%")
-    .attr("y", "50%")
-    .attr("text-anchor", "middle")
-    .attr("dominant-baseline", "middle")
-    .attr("fill", "var(--muted)")
-    .text("Loading data...");
+  try {
+    const [institutionRows, fieldRows] = await Promise.all([
+      d3.csv("data/college_scorecard_data/Most-Recent-Cohorts-Institution.csv"),
+      d3.csv("data/college_scorecard_data/Most-Recent-Cohorts-Field-of-Study.csv", parseFieldOfStudyRow)
+    ]);
 
-  const [institutionRows, fieldRows] = await Promise.all([
-    d3.csv("data/college_scorecard_data/Most-Recent-Cohorts-Institution.csv"),
-    d3.csv("data/college_scorecard_data/Most-Recent-Cohorts-Field-of-Study.csv", parseFieldOfStudyRow)
-  ]);
+    const parsedInstitutions = institutionRows.map(parseInstitutionRow);
+    state.scorecardInstitutions = parsedInstitutions;
+    state.fieldOfStudyRows = fieldRows;
 
-  const parsedInstitutions = institutionRows.map(parseInstitutionRow);
-  state.scorecardInstitutions = parsedInstitutions;
-  state.fieldOfStudyRows = fieldRows;
+    refreshScorecardRows();
 
-  refreshScorecardRows();
+    populateSelect("#map-state", state.stateOptions, state.selectedState);
+    refreshMapMetricAndSizeSelects();
 
-  populateSelect("#map-state", state.stateOptions, state.selectedState);
-  refreshMapMetricAndSizeSelects();
-
-  initializeControls();
-  initializeDecideControls();
-  d3.select("#back-to-country").on("click", () => {
-    state.selectedState = "All States";
-    state.selectedCollege = null;
-    d3.select("#map-state").property("value", "All States");
-    renderMapSection();
-  });
-  renderSavedColleges();
-  renderProjectionSection();
-  renderDecideSearchHint();
-  renderMapSection();
-  window.addEventListener("resize", () => {
-    renderMapSection();
+    initializeControls();
+    initializeDecideControls();
+    d3.select("#back-to-country").on("click", () => {
+      state.selectedState = "All States";
+      state.selectedCollege = null;
+      d3.select("#map-state").property("value", "All States");
+      renderMapSection();
+    });
+    renderSavedColleges();
     renderProjectionSection();
-  });
+    renderDecideSearchHint();
+    await renderMapSection();
+    window.addEventListener("resize", () => {
+      renderMapSection();
+      renderProjectionSection();
+    });
+  } catch (e) {
+    console.error(e);
+    if (window.__appLoading) {
+      window.__appLoading.setMessage("Could not load data. Try refreshing the page.");
+    }
+  } finally {
+    if (window.__appLoading) window.__appLoading.markMainReady();
+  }
 }
 
 function refreshScorecardRows() {
@@ -896,16 +896,6 @@ async function renderMapSection() {
   svg.attr("viewBox", `0 0 ${width} ${height}`);
   svg.selectAll("*").remove();
 
-  // Show loading indicator
-  const loadingGroup = svg.append("g").attr("class", "loading");
-  loadingGroup.append("text")
-    .attr("x", width / 2)
-    .attr("y", height / 2)
-    .attr("text-anchor", "middle")
-    .attr("dominant-baseline", "middle")
-    .attr("fill", "var(--muted)")
-    .text("Loading map...");
-
   const institutions = getFilteredInstitutions().filter((d) => d.lat != null && d.lon != null);
   const stateMetrics = computeStateMetrics();
 
@@ -1129,10 +1119,15 @@ async function renderMapSection() {
     } else {
       resetZoom();
     }
-
-    loadingGroup.remove();
   } catch (error) {
-    loadingGroup.select("text").text("Unable to load basemap data. Please check your network connection.");
+    svg.selectAll("*").remove();
+    svg.append("text")
+      .attr("x", width / 2)
+      .attr("y", height / 2)
+      .attr("text-anchor", "middle")
+      .attr("dominant-baseline", "middle")
+      .attr("fill", "var(--muted)")
+      .text("Unable to load basemap data. Please check your network connection.");
   }
 
   d3.select("#back-to-country").classed("hidden", state.selectedState === "All States");

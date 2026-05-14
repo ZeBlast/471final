@@ -682,6 +682,10 @@ function populateStateFilter(rows) {
 function initLearnScatter() {
   const slider = document.getElementById("earnings-horizon-slider");
   const sliderValue = document.getElementById("earnings-horizon-value");
+  if (!slider || !sliderValue) {
+    if (window.__appLoading) window.__appLoading.markScatterReady();
+    return;
+  }
   const nHorizons = earningsSliderLabels.length;
   const maxIdx = nHorizons - 1;
   slider.min = "0";
@@ -690,35 +694,43 @@ function initLearnScatter() {
   slider.setAttribute("aria-valuemin", "0");
   slider.setAttribute("aria-valuemax", String(maxIdx));
 
-  d3.csv("data/college_scorecard_data/Most-Recent-Cohorts-Institution.csv").then((raw) => {
-    scatterState.rows = raw.map(parseScatterRow).filter(Boolean);
-    populateStateFilter(scatterState.rows);
+  d3.csv("data/college_scorecard_data/Most-Recent-Cohorts-Institution.csv")
+    .then((raw) => {
+      scatterState.rows = raw.map(parseScatterRow).filter(Boolean);
+      populateStateFilter(scatterState.rows);
 
-    const rerender = () => renderScatter(false);
+      const rerender = () => renderScatter(false);
 
-    slider.addEventListener("input", () => {
-      scatterState.sliderIndex = Math.min(maxIdx, Math.max(0, +slider.value));
+      slider.addEventListener("input", () => {
+        scatterState.sliderIndex = Math.min(maxIdx, Math.max(0, +slider.value));
+        slider.value = String(scatterState.sliderIndex);
+        slider.setAttribute("aria-valuenow", String(scatterState.sliderIndex));
+        sliderValue.textContent = earningsSliderLabels[scatterState.sliderIndex].label;
+        renderScatter(true);
+      });
+
+      ["filter-public", "filter-private", "filter-forprofit", "filter-prestigious"].forEach((id) => {
+        document.getElementById(id).addEventListener("change", rerender);
+      });
+
+      document.getElementById("state-filter").addEventListener("change", rerender);
+      document.getElementById("chart-x-mode").addEventListener("change", rerender);
+
+      window.addEventListener("resize", rerender);
+
+      scatterState.sliderIndex = Math.min(maxIdx, Math.max(0, +slider.value || 0));
       slider.value = String(scatterState.sliderIndex);
       slider.setAttribute("aria-valuenow", String(scatterState.sliderIndex));
       sliderValue.textContent = earningsSliderLabels[scatterState.sliderIndex].label;
-      renderScatter(true);
+      rerender();
+      if (window.__appLoading) window.__appLoading.markScatterReady();
+    })
+    .catch(() => {
+      if (window.__appLoading) {
+        window.__appLoading.setMessage("Could not load chart data.");
+        window.__appLoading.markScatterReady();
+      }
     });
-
-    ["filter-public", "filter-private", "filter-forprofit", "filter-prestigious"].forEach((id) => {
-      document.getElementById(id).addEventListener("change", rerender);
-    });
-
-    document.getElementById("state-filter").addEventListener("change", rerender);
-    document.getElementById("chart-x-mode").addEventListener("change", rerender);
-
-    window.addEventListener("resize", rerender);
-
-    scatterState.sliderIndex = Math.min(maxIdx, Math.max(0, +slider.value || 0));
-    slider.value = String(scatterState.sliderIndex);
-    slider.setAttribute("aria-valuenow", String(scatterState.sliderIndex));
-    sliderValue.textContent = earningsSliderLabels[scatterState.sliderIndex].label;
-    rerender();
-  });
 }
 
 if (document.readyState === "loading") {
