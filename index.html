@@ -3,324 +3,170 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>After Graduation | PSEO Cohort Explorer</title>
+  <title>After Graduation | College Scorecard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..800;1,6..72,400..800&family=Source+Sans+3:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
 </head>
-<body>
-  <div class="page-shell">
-    <header class="hero">
-      <nav class="topbar">
-        <div class="brand">After Graduation</div>
-        <div class="topbar-links">
-          <a href="#learn">Learn</a>
-          <a href="explore.html">Explore</a>
-          <a href="#decide">Decide</a>
-          <a href="about.html" class="button-nav-about">About &amp; AI Usage</a>
-        </div>
+<body class="page-learn page-explore">
+  <div class="page-shell page-shell--article">
+    <header class="viz-nav">
+      <div class="viz-nav__brand">After Graduation</div>
+      <nav class="viz-nav__links" aria-label="Sections">
+        <a href="#learn">Learn</a>
+        <a href="#explore">Explore</a>
+        <a href="#decide">Compare</a>
+        <a href="about.html">About</a>
       </nav>
-
-      <div class="hero-grid">
-        <section class="hero-copy">
-          <p class="eyebrow">Interactive D3 Storytelling</p>
-          <h1>What do graduates earn after college?</h1>
-          <p class="hero-text">
-            Where you go to college shapes how much debt you carry for decades. But tuition sticker prices hide the real story. 
-            This tool combines College Scorecard cost and debt data with Post-Secondary Employment Outcomes earnings data to reveal 
-            something most rankings never show: which states, regions, and types of schools actually produce graduates who can 
-            afford the debt they take on. The findings are surprising, and in some cases alarming. 
-          </p>
-          <div class="hero-actions">
-            <a class="button primary" href="#learn">Start Exploring</a>
-            <a class="button secondary" href="#decide">Build a Projection</a>
-          </div>
-          <p class="footnote">
-            Exact cohort note: this website only contains cohorts up to 2019.
-          </p>
-        </section>
-
-        <section class="hero-panel">
-          <div class="hero-stat">
-            <span class="hero-stat-label">The central finding</span>
-            <strong>New York graduates earn 3.5x their debt at year one. South Carolina graduates earn just 1.6x. Same country, vastly different outcomes.</strong>
-          </div>
-          <div class="hero-mini-grid">
-            <article>
-              <span>2001 to 2019</span>
-              <strong>Debt stayed flat while earnings grew. The burden is easing, slowly.</strong>
-            </article>
-            <article>
-              <span>Low tuition schools</span>
-              <strong>Under $6k tuition cuts completer debt nearly in half vs high-tuition peers.</strong>
-            </article>
-            <article>
-              <span>The outlier</span>
-              <strong>Some schools charge $60k+ per year while graduates earn barely $40k.</strong>
-            </article>
-          </div>
-        </section>
-      </div>
     </header>
-
-    <section class="panel controls-panel note-panel">
-      <div class="control-group">
-        <label for="global-cohort">Graduation Cohort</label>
-        <select id="global-cohort"></select>
-      </div>
-      <div>
-        <strong>Dataset note</strong>
-        <p class="footnote">
-          This page uses institution-level PSEO rows filtered to <code>inst_level = I</code>, <code>cip_level = A</code>,
-          <code>degree_level = 05</code>, then combined from the local CSV files in this folder.
-          The cohort selector includes the aggregate <code>0000</code> rows plus every usable graduation cohort in the file.
-          Availability of year 1, year 5, and year 10 earnings depends on the selected cohort.
-        </p>
-      </div>
-    </section>
 
     <main>
 
-      <!-- DATA STORY SECTION -->
-      <section class="story-section" id="story">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">The Story</p>
-            <h2>What the data actually tells us</h2>
-          </div>
-          <p>Before you explore, here is what we found by analyzing every school in this dataset. These are real conclusions drawn from the data, not assumptions.</p>
-        </div>
-
-        <div class="story-narrative-grid">
-
-          <div class="story-card story-card--highlight">
-            <p class="story-card-eyebrow">Finding 1: The New York Anomaly</p>
-            <h3>New York graduates carry the least debt relative to what they earn, by a wide margin</h3>
-            <p>
-              Among all states with at least three schools in the 2019 cohort, New York ranks first in earnings-to-debt ratio 
-              at <strong>3.54x</strong>. The driver is the CUNY system. Schools like Baruch College, Lehman College, and Hunter College 
-              charge roughly $7,000 per year in tuition, yet their graduates earn $43,000 to $54,000 in year one with completer 
-              debt as low as $10,500. Baruch graduates earn $53,849 with just $11,130 in debt, a ratio of 4.84x.
-            </p>
-            <p>
-              This is not because New York graduates earn vastly more. Their median year-1 earnings of $44,632 are close to the 
-              national median. The difference is the debt side: CUNY schools hold debt so low that graduates are almost immediately 
-              financially stable. The lesson is clear: <strong>the price of school matters more than its prestige</strong>.
-            </p>
-            <p class="story-card-action">Try it: filter the map to NY and color by earnings-to-debt ratio.</p>
-          </div>
-
-          <div class="story-card story-card--warning">
-            <p class="story-card-eyebrow">Finding 2: The South Carolina Problem</p>
-            <h3>South Carolina sits at the bottom of the debt efficiency table, and the gap is severe</h3>
-            <p>
-              South Carolina ranks last among states with sufficient data, with a median earnings-to-debt ratio of just <strong>1.59x</strong>. 
-              Several schools in the state graduate students who owe more than they can comfortably repay. 
-              Allen University graduates earn $26,970 in year one but carry $35,000 in debt, a ratio of 0.77x, meaning 
-              their debt actually exceeds a full year of earnings. Morris College and South Carolina State University 
-              sit at 1.02x and 1.06x respectively.
-            </p>
-            <p>
-              Many of these are HBCUs serving students with high Pell grant rates, meaning they are already among the most 
-              financially vulnerable students. The data suggests these schools need more support to reduce the debt burden 
-              on the students who can least afford it.
-            </p>
-            <p class="story-card-action">Try it: filter the map to SC and color by completer debt.</p>
-          </div>
-
-          <div class="story-card">
-            <p class="story-card-eyebrow">Finding 3: Low Tuition Schools Win on Efficiency</p>
-            <h3>Schools charging under $6,000 per year produce graduates with nearly half the debt of expensive schools</h3>
-            <p>
-              When we split schools into tuition bands, a striking pattern emerges. Schools with in-state tuition 
-              under $6,000 produce graduates with median completer debt of just <strong>$16,206</strong>, compared 
-              to $25,908 at schools charging over $20,000. Yet year-1 earnings are nearly identical: $44,924 versus $44,354.
-            </p>
-            <p>
-              Paying more does not get you more. The earnings-to-debt ratio at low-tuition schools reaches 3.0x, 
-              versus 1.8x at high-tuition schools. Students who attend affordable public colleges and state systems 
-              are starting their careers from a fundamentally stronger financial position, often for the same salary.
-            </p>
-            <p class="story-card-action">Try it: sort states by earnings-to-debt ratio in Section 1, then compare to total cost.</p>
-          </div>
-
-          <div class="story-card">
-            <p class="story-card-eyebrow">Finding 4: A Slow but Real Improvement</p>
-            <h3>Nationally, the debt-to-earnings burden has improved from 2001 to 2019</h3>
-            <p>
-              Looking across graduation cohorts from 2001 to 2019, median completer debt has stayed remarkably flat, 
-              hovering around $21,700 to $22,000 throughout. Meanwhile, median year-1 earnings climbed from 
-              <strong>$42,152 in 2001 to $45,123 in 2019</strong>. That pushed the earnings-to-debt ratio from 1.90x to 2.13x.
-            </p>
-            <p>
-              The narrative that student debt has spiraled out of control across all sectors is not fully supported by 
-              PSEO outcomes data for bachelor's graduates. The crisis is concentrated in specific institutions and states, 
-              not evenly distributed. The 2010 cohort saw the worst ratio at 1.86x, corresponding with post-recession job 
-              market weakness, but outcomes recovered and have improved since.
-            </p>
-            <p class="story-card-action">Try it: change the global cohort selector from 2019 to 2010 to see how the map shifts.</p>
-          </div>
-
-        </div>
-      </section>
-
-      <section id="learn" class="story-section">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">Section 1</p>
-            <h2>Learn: Cohort Earnings Context</h2>
-          </div>
-          <p>
-            Compare states within the selected cohort to see how earnings, borrowing, and debt burden move together.
+      <article class="viz-article" id="learn">
+        <header class="viz-mast">
+          <p class="viz-kicker">College Scorecard · Institutions</p>
+          <h1 class="viz-headline">What do graduates earn after college?</h1>
+          <p class="viz-article-intro">
+            This article plots every campus as one dot so you can see how median earnings after completion relate to admissions, debt, or tuition before you open the map or compare saved schools.
           </p>
-        </div>
-
-        <div class="story-callout">
-          <p>
-            The findings above show that where a school is located and what it charges matter enormously. 
-            This chart lets you verify those patterns yourself by state. Sort by earnings-to-debt ratio and 
-            watch New York float to the top and South Carolina sink toward the bottom. Switch the debt metric 
-            between completer debt and median debt to see how different populations of borrowers are affected. 
-            Note that year-5 and year-10 earnings data are only available for certain cohorts.
+          <p class="viz-deck">
+            Each dot is a campus with reported median earnings after completion. Color encodes who owns the school—public, private non-profit, private for-profit, or a selective slice of private non-profit we label “Prestigious” from Scorecard signals. Use the controls to change what sits on the horizontal axis and which earnings horizon is on the vertical scale.
           </p>
-        </div>
+          <p class="viz-byline">
+            <span>Source:</span> U.S. Department of Education College Scorecard, most-recent institution file. Map and comparison below use the same extract.
+          </p>
+        </header>
 
-        <div class="panel controls-panel">
-          <div class="control-group">
-            <label for="learn-rate">State Comparison Metric</label>
-            <select id="learn-rate">
-              <option value="avgY1Earnings">Median year-1 earnings</option>
-              <option value="avgY5Earnings">Median year-5 earnings</option>
-              <option value="avgY10Earnings">Median year-10 earnings</option>
-              <option value="avgEarningsDebtRatio">Earnings-to-debt ratio</option>
-              <option value="avgPellGrantRate">Pell grant rate</option>
-            </select>
-          </div>
-          <div class="control-group">
-            <label for="learn-cost">Debt / Cost Metric</label>
-            <select id="learn-cost">
-              <option value="avgCompleterDebt">Completer debt</option>
-              <option value="avgMedianDebt">Median debt</option>
-              <option value="avgTotalCostEstimate">Estimated annual cost</option>
-            </select>
-          </div>
-          <div class="control-group">
-            <label for="learn-sort">Sort States By</label>
-            <select id="learn-sort">
-              <option value="avgY1Earnings">Median year-1 earnings</option>
-              <option value="avgY5Earnings">Median year-5 earnings</option>
-              <option value="avgY10Earnings">Median year-10 earnings</option>
-              <option value="avgEarningsDebtRatio">Earnings-to-debt ratio</option>
-              <option value="avgCompleterDebt">Completer debt</option>
-              <option value="schoolCount">Matched college count</option>
-            </select>
-          </div>
-        </div>
+        <aside class="viz-method" aria-label="Method note (scatter)">
+          <p>
+            Median earnings are <strong>after completion</strong> only—one year and four years out—drawn from the same fields used on the map. Graduate debt uses median debt for completers. Tuition modes use published in-state or out-of-state tuition; admission rate is the share admitted.
+          </p>
+        </aside>
 
-        <div class="learn-layout">
-          <article class="panel chart-panel">
-            <div class="chart-header">
-              <div>
-                <h3>State Earnings vs. Debt Burden</h3>
-                <p>Each state compares earnings against average completer debt for the selected cohort.</p>
+        <section class="viz-trend-section" aria-label="Trend headline">
+          <div id="scatter-stats-container" class="viz-trend-host" aria-live="polite">
+            <div class="viz-trend-stack">
+              <p class="viz-trend-hed">Loading the read on this chart…</p>
+              <p class="viz-trend-dek">Once data arrive, a headline summary of the current filters appears here.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="viz-controls viz-controls--learn-scatter" aria-label="Scatter chart controls">
+          <div class="viz-controls__grid viz-controls__grid--learn-scatter">
+            <fieldset class="viz-fieldset viz-fieldset--segments">
+              <legend class="viz-label">Who to show</legend>
+              <div class="viz-check-row">
+                <label class="viz-check"><input type="checkbox" id="filter-public" checked> Public</label>
+                <label class="viz-check"><input type="checkbox" id="filter-private" checked> Private non-profit</label>
+                <label class="viz-check"><input type="checkbox" id="filter-forprofit" checked> Private for-profit</label>
+                <label class="viz-check"><input type="checkbox" id="filter-prestigious" checked> Prestigious</label>
               </div>
-              <div class="legend">
-                <span><i class="legend-swatch employed"></i>Selected earnings metric</span>
-                <span><i class="legend-swatch unemployed"></i>Completer debt</span>
+            </fieldset>
+            <div class="viz-field">
+              <label class="viz-label" for="chart-x-mode">Horizontal axis</label>
+              <select id="chart-x-mode" aria-label="What to compare earnings against">
+                <option value="adm" selected>Admission rate</option>
+                <option value="debt">Graduate debt</option>
+                <option value="tuition">In-state tuition</option>
+                <option value="tuitionOut">Out-of-state tuition</option>
+              </select>
+            </div>
+            <div class="viz-field">
+              <label class="viz-label" for="state-filter">State</label>
+              <select id="state-filter" aria-label="Filter scatter by state">
+                <option value="">All states</option>
+              </select>
+            </div>
+            <div class="viz-field viz-field--horizon">
+              <label class="viz-label" for="earnings-horizon-slider">Earnings horizon</label>
+              <div class="viz-slider-row">
+                <input type="range" id="earnings-horizon-slider" min="0" max="1" step="1" value="0" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0" aria-label="Toggle median earnings one year or four years after completion" class="viz-range--horizon">
+                <span id="earnings-horizon-value" class="viz-slider-value">Median earnings, 1 year after completion</span>
               </div>
             </div>
-            <svg id="employment-chart" aria-label="State earnings and debt chart"></svg>
-          </article>
+          </div>
+        </section>
 
-          <article class="panel chart-panel">
-            <div class="chart-header">
-              <div>
-                <h3>Debt, Cost, and Efficiency</h3>
-                <p>The highlighted line shows the selected cost metric; dots compare earnings-to-debt efficiency.</p>
-              </div>
-              <div class="legend">
-                <span><i class="legend-swatch" style="background:var(--gold)"></i>Year-1 earnings</span>
-                <span><i class="legend-swatch" style="background:var(--teal-soft)"></i>Earnings-to-debt (scaled)</span>
-                <span><i class="legend-swatch" style="background:var(--accent)"></i>Selected cost metric</span>
-              </div>
+        <figure class="viz-chart-bleed viz-figure" aria-label="Scatter chart">
+          <div class="viz-figure__header">
+            <h2 class="viz-chart-title" id="scatter-chart-title"><span class="viz-section-prefix">Learn:</span> <span id="scatter-chart-title-dynamic">Earnings vs. admission rate</span></h2>
+            <div class="viz-legend legend" aria-hidden="false">
+              <span><i class="legend-swatch" style="background: #1f8a70"></i>Public</span>
+              <span><i class="legend-swatch" style="background: #c9a227"></i>Private non-profit</span>
+              <span><i class="legend-swatch" style="background: #d4572f"></i>Private for-profit</span>
+              <span><i class="legend-swatch" style="background: #7c3aed"></i>Prestigious</span>
             </div>
-            <svg id="debt-chart" aria-label="State cost and efficiency chart"></svg>
-          </article>
-        </div>
-      </section>
+          </div>
+          <div class="scatter-chart-wrap">
+            <svg id="earnings-scatter-chart" aria-label="Scatter of median earnings versus selected measure"></svg>
+            <div id="scatter-tooltip" class="scatter-tooltip" aria-live="polite"></div>
+          </div>
+          <figcaption class="viz-caption" id="scatter-chart-description">Loading…</figcaption>
+        </figure>
 
-      <section id="explore" class="story-section">
-        <div class="alert-banner">
-          <div>
-            <strong>New Explore page is now live!</strong>
-            <span>Click below to jump straight to the full College Scorecard map experience.</span>
-          </div>
-          <a href="explore.html" class="alert-link">Open new Explore page</a>
-        </div>
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">Section 2</p>
-            <h2>Explore: College Outcomes Map</h2>
-          </div>
-          <p>
-            Inspect colleges in the selected cohort. Color can emphasize earnings or debt, while point size
-            reveals scale in cost or salary.
+        <footer class="viz-footer">
+          <p>Next: the <a href="#explore">national map</a>, then <a href="#decide">Compare</a> to stack saved schools.</p>
+        </footer>
+      </article>
+
+      <article class="viz-article" id="explore">
+        <header class="viz-mast">
+          <p class="viz-kicker">College Scorecard · Geography</p>
+          <h1 class="viz-headline"><span class="viz-section-prefix">Explore:</span> Pan and zoom the United States; color encodes one measure and dot size another on every campus with coordinates.</h1>
+          <p class="viz-deck">
+            Hover for detail and click to stage a school for the comparison tray. The same Scorecard extract as Learn; campuses missing lat/long are omitted here but remain searchable in Compare.
           </p>
-        </div>
-
-        <div class="story-callout">
-          <p>
-            <strong>Zoom in, dig deeper:</strong> Now that you know which states produce the best outcomes overall, 
-            it is time to look at individual schools. Each dot on the map is a college. Color and size encode the 
-            metrics you choose. Densely populated regions like the Northeast can be hard to read at full zoom, so 
-            use the <strong>+ / -</strong> controls or scroll to zoom, and drag to pan. Filter by state to isolate 
-            a specific region.
+          <p class="viz-byline">
+            <span>Source:</span> College Scorecard institution and field-of-study extracts in <code>data/college_scorecard_data/</code>. Map dots require lat/long; search in Compare covers the full parsed list.
           </p>
+        </header>
+
+        <aside class="viz-method" aria-label="Method note (map)">
           <p>
-            💡 <strong>Tip:</strong> Hover over any college dot to see its full profile in the panel on the right. 
-            Click a college dot to add it to your comparison list in Section 3 below, where you can directly 
-            compare debt burden against earnings trajectories side by side.
+            Median earnings on the map are <strong>after completion</strong>—one year or four years out—the same horizons as the scatter above. Institutions without coordinates are omitted from the map but remain searchable.
           </p>
-        </div>
+        </aside>
 
-        <div class="panel controls-panel">
-          <div class="control-group">
-            <label for="map-metric">Color Colleges By</label>
-            <select id="map-metric">
-              <option value="y1P50Earnings">Median year-1 earnings</option>
-              <option value="y5P50Earnings">Median year-5 earnings</option>
-              <option value="y10P50Earnings">Median year-10 earnings</option>
-              <option value="earningsDebtRatio">Earnings-to-debt ratio</option>
-              <option value="completerDebt">Completer debt</option>
-              <option value="tuitionInState">In-state tuition</option>
-              <option value="pellGrantRate">Pell grant rate</option>
-            </select>
+        <section class="viz-controls" aria-label="Map controls">
+          <div class="viz-controls__grid viz-controls__grid--explore">
+            <div class="viz-field">
+              <label class="viz-label" for="map-metric">Color by</label>
+              <select id="map-metric">
+                <option value="earn1YrAfterCompMdn">Median earnings, 1 year after completion</option>
+                <option value="earn4YrAfterCompMdn" selected>Median earnings, 4 years after completion</option>
+                <option value="earningsDebtRatio">Earnings-to-debt ratio</option>
+                <option value="completerDebt">Completer debt</option>
+                <option value="tuitionInState">In-state tuition</option>
+                <option value="pellGrantRate">Pell grant rate</option>
+              </select>
+            </div>
+            <div class="viz-field">
+              <label class="viz-label" for="map-state">State</label>
+              <select id="map-state"></select>
+            </div>
+            <div class="viz-field">
+              <label class="viz-label" for="map-size">Size by</label>
+              <select id="map-size">
+                <option value="earn1YrAfterCompMdn">Median earnings, 1 year after completion</option>
+                <option value="earn4YrAfterCompMdn" selected>Median earnings, 4 years after completion</option>
+                <option value="tuitionInState">In-state tuition (TUITIONFEE_IN, same as Learn)</option>
+                <option value="completerDebt">Completer debt</option>
+              </select>
+            </div>
           </div>
-          <div class="control-group">
-            <label for="map-state">Filter State</label>
-            <select id="map-state"></select>
-          </div>
-          <div class="control-group">
-            <label for="map-size">Size Colleges By</label>
-            <select id="map-size">
-              <option value="y1P50Earnings">Median year-1 earnings</option>
-              <option value="y5P50Earnings">Median year-5 earnings</option>
-              <option value="y10P50Earnings">Median year-10 earnings</option>
-              <option value="totalCostEstimate">Estimated annual cost</option>
-              <option value="completerDebt">Completer debt</option>
-            </select>
-          </div>
-        </div>
+        </section>
 
-        <div class="explore-layout">
-          <article class="panel map-panel">
-            <div class="chart-header">
-              <div>
-                <h3>PSEO College Map</h3>
-                <p>Hover over a college to inspect details. Click to add to your comparison in Section 3.</p>
-              </div>
-              <div id="map-legend" class="map-legend"></div>
+        <div class="viz-chart-bleed viz-explore-split">
+          <figure class="viz-figure viz-figure--map" aria-label="United States map of colleges">
+            <div class="viz-figure__header viz-figure__header--map">
+              <h2 class="viz-chart-title viz-chart-title--map-hed">U.S. map</h2>
+              <p class="viz-lede">Warm colors lean toward lower values on the metric you pick; cool teal marks higher values. Use zoom controls or scroll to focus a coast or a corridor.</p>
+            </div>
+            <div id="map-legend" class="map-legend map-legend--explore" aria-label="Map color scale"></div>
+            <div id="back-to-country-container" class="back-to-country-container">
+              <button id="back-to-country" title="Back to all states" class="hidden">← All states</button>
             </div>
             <div class="map-wrap">
               <div class="map-zoom-controls">
@@ -328,50 +174,48 @@
                 <button id="zoom-reset" title="Reset zoom">⟳</button>
                 <button id="zoom-out" title="Zoom out">−</button>
               </div>
-              <svg id="us-map" aria-label="PSEO college outcomes map"></svg>
+              <svg id="us-map" aria-label="College Scorecard institution map"></svg>
               <div id="map-tooltip" class="tooltip hidden"></div>
             </div>
-          </article>
+          </figure>
 
-          <aside class="panel insight-panel">
-            <h3>Selected College</h3>
+          <aside class="viz-insight" aria-label="Selected college">
+            <h2 class="viz-chart-title viz-chart-title--minor">Hover or click a campus</h2>
+            <p class="viz-caption viz-caption--tight">Details for the point under your cursor. Click to add the campus to your tray in Compare.</p>
             <div id="college-card" class="college-card">
               <p>Hover a college point on the map to inspect details here.</p>
             </div>
           </aside>
         </div>
-      </section>
+      </article>
 
-      <section id="decide" class="story-section">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">Section 3</p>
-            <h2>Decide: Directly Compare College Projections</h2>
+      <article class="viz-article viz-article--decide" id="decide">
+        <header class="viz-mast viz-mast--sub">
+          <h1 class="viz-headline"><span class="viz-section-prefix">Compare:</span> Search or reuse map picks, then stack institutions side by side on tuition and aid.</h1>
+          <p class="viz-deck">
+            Tuition view toggles in-state versus out-of-state sticker price for the small multiples. Charts reuse the same parsed Scorecard rows as the map.
+          </p>
+        </header>
+
+        <section class="viz-controls" aria-label="Search">
+          <div class="viz-controls__grid viz-controls__grid--decide">
+            <div class="viz-field">
+              <label class="viz-label" for="decide-search-state">Limit search to state</label>
+              <select id="decide-search-state"></select>
+            </div>
+            <div class="viz-field viz-field--grow decide-search-field">
+              <label class="viz-label" for="decide-search">Find a college</label>
+              <input id="decide-search" type="search" placeholder="Start typing a school name…" autocomplete="off">
+            </div>
           </div>
-          <p>
-            You've seen state trends and explored individual schools. Now make your decision with data.
-          </p>
-        </div>
+        </section>
 
-        <div class="story-callout">
-          <p>
-            <strong>The moment of truth:</strong> College debt is an investment. The question is whether the earnings 
-            on the other side justify it. For each school you have added, this section charts the trajectory of median 
-            earnings at Year 1 alongside the completer debt line. Schools whose earnings curve rises quickly above 
-            the debt line are giving graduates a fast path to financial stability. Schools where earnings barely 
-            clear debt at Year 1 should prompt serious questions.
-          </p>
-          <p>
-            Click any college on the map above to add it here. You can compare as many schools as you want 
-            side by side, and toggle between in-state and out-of-state tuition to see how residency changes 
-            the picture.
-          </p>
-        </div>
+        <div id="decide-search-results" class="panel decide-search-panel"></div>
 
-        <div class="panel projection-shell">
+        <div class="projection-shell panel viz-projection-shell">
           <div class="projection-controls">
-            <div class="control-group">
-              <label for="projection-residency">Tuition View</label>
+            <div class="viz-field">
+              <label class="viz-label" for="projection-residency">Tuition view</label>
               <select id="projection-residency">
                 <option value="tuitionInState">In-state tuition</option>
                 <option value="tuitionOutState">Out-of-state tuition</option>
@@ -379,15 +223,15 @@
             </div>
           </div>
           <div id="saved-colleges"></div>
-          <div class="projection-charts">
-          </div>
+          <div class="projection-charts"></div>
         </div>
-      </section>
+      </article>
     </main>
   </div>
 
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
-  <script src="js/script.js"></script>
+  <script src="js/learn_earnings_scatter.js"></script>
+  <script src="js/new_script.js"></script>
 </body>
 </html>

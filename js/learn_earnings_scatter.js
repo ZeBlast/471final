@@ -502,7 +502,7 @@ function renderScatter(animate = false) {
   const nShown = plotRows.length;
   const stats = summarizeByCategory(rows, sliderIndex, modeKey);
 
-  const titleEl = document.getElementById("scatter-chart-title");
+  const titleEl = document.getElementById("scatter-chart-title-dynamic");
   const descEl = document.getElementById("scatter-chart-description");
   if (titleEl) {
     titleEl.textContent = `Earnings vs. ${mode.title}`;

@@ -14,9 +14,9 @@
     <header class="viz-nav">
       <div class="viz-nav__brand">After Graduation</div>
       <nav class="viz-nav__links" aria-label="Site">
-        <a href="learn.html">Learn</a>
-        <a href="explore.html" aria-current="page">Explore</a>
-        <a href="#decide">Decide</a>
+        <a href="index.html#learn">Learn</a>
+        <a href="index.html#explore" aria-current="page">Explore</a>
+        <a href="index.html#decide">Compare</a>
         <a href="about.html">About</a>
       </nav>
     </header>
@@ -25,12 +25,12 @@
       <article class="viz-article" id="explore">
         <header class="viz-mast">
           <p class="viz-kicker">College Scorecard · Geography</p>
-          <h1 class="viz-headline">Two dials, one map: where color meets size on every campus</h1>
+          <h1 class="viz-headline"><span class="viz-section-prefix">Explore:</span> Pan and zoom the United States; color encodes one measure and dot size another on every campus with coordinates.</h1>
           <p class="viz-deck">
-            Pan and zoom the United States. Each point is a college with coordinates in the Scorecard. Pick what color encodes—earnings, debt, tuition, Pell share—and what dot size emphasizes. Hover for detail; click to stage a school for comparison below.
+            Hover for detail and click to stage a school for the comparison tray. The same Scorecard extract as Learn; campuses missing lat/long are omitted here but remain searchable in Compare.
           </p>
           <p class="viz-byline">
-            <span>Source:</span> College Scorecard institution and field-of-study extracts in <code>data/college_scorecard_data/</code>. Map dots require lat/long; search in Decide covers the full parsed list.
+            <span>Source:</span> College Scorecard institution and field-of-study extracts in <code>data/college_scorecard_data/</code>. Map dots require lat/long; search in Compare covers the full parsed list.
           </p>
         </header>
 
@@ -72,7 +72,7 @@
         <div class="viz-chart-bleed viz-explore-split">
           <figure class="viz-figure viz-figure--map" aria-label="United States map of colleges">
             <div class="viz-figure__header viz-figure__header--map">
-              <h2 class="viz-chart-title">National map</h2>
+              <h2 class="viz-chart-title viz-chart-title--map-hed">U.S. map</h2>
               <p class="viz-lede">Warm colors lean toward lower values on the metric you pick; cool teal marks higher values. Use zoom controls or scroll to focus a coast or a corridor.</p>
             </div>
             <div id="map-legend" class="map-legend map-legend--explore" aria-label="Map color scale"></div>
@@ -91,8 +91,8 @@
           </figure>
 
           <aside class="viz-insight" aria-label="Selected college">
-            <h2 class="viz-chart-title viz-chart-title--minor">Selected college</h2>
-            <p class="viz-caption viz-caption--tight">Hover a dot for a live profile. Click to add the campus to your comparison tray in Decide.</p>
+            <h2 class="viz-chart-title viz-chart-title--minor">Hover or click a campus</h2>
+            <p class="viz-caption viz-caption--tight">Details for the point under your cursor. Click to add the campus to your tray in Compare.</p>
             <div id="college-card" class="college-card">
               <p>Hover a college point on the map to inspect details here.</p>
             </div>
@@ -102,10 +102,9 @@
 
       <article class="viz-article viz-article--decide" id="decide">
         <header class="viz-mast viz-mast--sub">
-          <p class="viz-kicker">Comparison</p>
-          <h1 class="viz-headline">Decide: stack institutions side by side</h1>
+          <h1 class="viz-headline"><span class="viz-section-prefix">Compare:</span> Search or reuse map picks, then stack institutions side by side on tuition and aid.</h1>
           <p class="viz-deck">
-            Anything you save from the map—or find in search—lands here. Tuition view toggles in-state versus out-of-state sticker price for the small multiples. Charts reuse the same parsed Scorecard rows as the map.
+            Tuition view toggles in-state versus out-of-state sticker price for the small multiples. Charts reuse the same parsed Scorecard rows as the map.
           </p>
         </header>
 

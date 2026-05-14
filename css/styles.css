@@ -1056,6 +1056,23 @@ body.page-explore main {
   gap: 0;
 }
 
+body.page-learn.page-explore .viz-index-lede {
+  max-width: min(1280px, calc(100% - 32px));
+  width: 100%;
+  margin: 0 auto 32px;
+  padding: 0 16px;
+  font-size: 1.08rem;
+  line-height: 1.58;
+  color: #2a3142;
+  box-sizing: border-box;
+}
+
+body.page-learn.page-explore main > .viz-article + .viz-article {
+  margin-top: 44px;
+  padding-top: 40px;
+  border-top: 1px solid rgba(22, 32, 51, 0.12);
+}
+
 body.page-learn .viz-article,
 body.page-explore .viz-article {
   max-width: min(1040px, calc(100% - 32px));
@@ -1117,6 +1134,38 @@ body.page-explore .viz-deck {
   font-size: 1.2rem;
   line-height: 1.55;
   color: #2a3142;
+}
+
+body.page-learn .viz-article-intro,
+body.page-explore .viz-article-intro {
+  margin: 0 0 14px;
+  max-width: 62ch;
+  font-size: 1.05rem;
+  line-height: 1.58;
+  color: #3a4152;
+}
+
+body.page-learn .viz-headline .viz-section-prefix,
+body.page-explore .viz-headline .viz-section-prefix {
+  font-family: "Source Sans 3", system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 0.42em;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-right: 0.45em;
+  vertical-align: 0.1em;
+}
+
+body.page-learn .viz-chart-title .viz-section-prefix,
+body.page-explore .viz-chart-title .viz-section-prefix {
+  font-family: "Source Sans 3", system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 0.68em;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-right: 0.35em;
 }
 
 body.page-learn .viz-byline,
