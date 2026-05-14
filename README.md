@@ -6,6 +6,32 @@ After Graduation is an interactive D3.js site that uses U.S. Department of Educa
 
 Open `index.html` in a modern browser from a local or static server (the page loads CSVs with D3; some environments block `file://` fetches). No build step is required.
 
+## How each section uses the data
+
+### Learn
+
+- Scatter plot: median earnings (1 or 4 years after completion) vs. admission rate, completer debt, in-state tuition, or out-of-state tuition.
+- Filters: institution segments (public, private nonprofit, for-profit), optional “prestigious” private nonprofit highlight, and state.
+- Narrative callouts summarize patterns for the current filter set.
+
+**Script:** `js/learn_earnings_scatter.js`
+
+### Explore
+
+- U.S. map (Albers USA) with one dot per institution that has lat/long.
+- **Color by** median earnings (1 or 4 years), earnings-to-debt ratio, completer debt, in-state tuition, or Pell rate.
+- **Size by** median earnings (1 or 4 years), in-state tuition, or completer debt.
+- State filter, zoom controls, tooltips, and click-to-add for Compare.
+- Detail panel combines institution-level metrics with top field-of-study rows from the FoS file.
+
+**Script:** `js/new_script.js` (map, card, search, Compare)
+
+### Compare
+
+- Search the full parsed institution list (not only map-eligible rows), filter by state, add schools to a tray.
+- Toggle in-state vs out-of-state tuition for the comparison charts.
+- For each saved school: summary tiles (debt, tuition, earnings-to-debt) and a line chart of the two earnings horizons with horizontal reference lines for completer debt and published tuition.
+
 ## Runtime datasets (required)
 
 These files power `index.html` as shipped. They live in `data/college_scorecard_data/` and are read directly in the browser.
@@ -54,32 +80,6 @@ Program-level extract keyed by `UNITID`. Used to enrich the **Explore** detail c
 
 - `UNITID`, `INSTNM`, `CIPCODE`, `CIPDESC`
 - `EARN_MDN_1YR`, `EARN_MDN_4YR`, `EARN_COUNT_WNE_1YR` (sorting “top” majors by count where available)
-
-## How each section uses the data
-
-### Learn
-
-- Scatter plot: median earnings (1 or 4 years after completion) vs. admission rate, completer debt, in-state tuition, or out-of-state tuition.
-- Filters: institution segments (public, private nonprofit, for-profit), optional “prestigious” private nonprofit highlight, and state.
-- Narrative callouts summarize patterns for the current filter set.
-
-**Script:** `js/learn_earnings_scatter.js`
-
-### Explore
-
-- U.S. map (Albers USA) with one dot per institution that has lat/long.
-- **Color by** median earnings (1 or 4 years), earnings-to-debt ratio, completer debt, in-state tuition, or Pell rate.
-- **Size by** median earnings (1 or 4 years), in-state tuition, or completer debt.
-- State filter, zoom controls, tooltips, and click-to-add for Compare.
-- Detail panel combines institution-level metrics with top field-of-study rows from the FoS file.
-
-**Script:** `js/new_script.js` (map, card, search, Compare)
-
-### Compare
-
-- Search the full parsed institution list (not only map-eligible rows), filter by state, add schools to a tray.
-- Toggle in-state vs out-of-state tuition for the comparison charts.
-- For each saved school: summary tiles (debt, tuition, earnings-to-debt) and a line chart of the two earnings horizons with horizontal reference lines for completer debt and published tuition.
 
 **Script:** `js/new_script.js`
 
