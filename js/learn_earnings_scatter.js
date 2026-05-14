@@ -95,6 +95,15 @@ const chartModes = {
   }
 };
 
+/** Short phrases for readers — avoids stats jargon in UI copy. */
+function plainBottomAxisTopic(modeKey) {
+  if (modeKey === "adm") return "how many applicants each school admits";
+  if (modeKey === "debt") return "how much students typically borrow to finish";
+  if (modeKey === "tuition") return "in-state sticker tuition";
+  if (modeKey === "tuitionOut") return "out-of-state sticker tuition";
+  return "the measure along the bottom";
+}
+
 const scatterState = {
   rows: [],
   sliderIndex: 0
@@ -180,6 +189,130 @@ function passesFilters(d) {
   return true;
 }
 
+const EARN_FIELD_1YR = "earn1YrAfterCompMdn";
+const EARN_FIELD_4YR = "earn4YrAfterCompMdn";
+
+function rowsPassingFilters(rows) {
+  return rows.filter((r) => passesFilters(r));
+}
+
+function rowsForCategory(rows, cat) {
+  return rowsPassingFilters(rows).filter((r) => r.category === cat);
+}
+
+function medianEarnForRows(rows, earnField) {
+  const vals = rows.map((r) => r[earnField]).filter((v) => v != null && Number.isFinite(v));
+  if (vals.length < 4) return null;
+  return d3.median(vals);
+}
+
+/** Friendly noun phrase for copy (lowercase where it reads mid-sentence). */
+function friendlyInstitutionBucket(cat) {
+  if (cat === CAT_PRESTIGIOUS) return "prestigious institutions";
+  if (cat === CAT_PUBLIC) return "public institutions";
+  if (cat === CAT_PRIVATE_NONPROFIT) return "private non-profit institutions";
+  if (cat === CAT_PRIVATE_FOR_PROFIT) return "for-profit institutions";
+  return `${cat} institutions`;
+}
+
+/**
+ * Compare two categories on typical 1-year vs 4-year pay (same checkbox/state filters; no x-axis filter).
+ * y1 and y4 are median(catA) - median(catB) at each horizon.
+ */
+function dualYearGapBetweenCategories(rows, catA, catB) {
+  const ra = rowsForCategory(rows, catA);
+  const rb = rowsForCategory(rows, catB);
+  if (ra.length < 4 || rb.length < 4) return null;
+  const a1 = medianEarnForRows(ra, EARN_FIELD_1YR);
+  const b1 = medianEarnForRows(rb, EARN_FIELD_1YR);
+  const a4 = medianEarnForRows(ra, EARN_FIELD_4YR);
+  const b4 = medianEarnForRows(rb, EARN_FIELD_4YR);
+  if (a1 == null || b1 == null || a4 == null || b4 == null) return null;
+  const y1 = a1 - b1;
+  const y4 = a4 - b4;
+  return {
+    y1,
+    y4,
+    abs1: Math.abs(y1),
+    abs4: Math.abs(y4),
+    labA: friendlyInstitutionBucket(catA),
+    labB: friendlyInstitutionBucket(catB)
+  };
+}
+
+function hedDekFromDualGap(fmtMoney, g) {
+  if (!g) return null;
+  if (g.abs1 < 2000 && g.abs4 < 2000) return null;
+  const win1 = g.y1 >= 0 ? g.labA : g.labB;
+  const lose1 = g.y1 >= 0 ? g.labB : g.labA;
+  const win4 = g.y4 >= 0 ? g.labA : g.labB;
+  const lose4 = g.y4 >= 0 ? g.labB : g.labA;
+  const hed = `One year after graduation, graduates of ${win1} make about ${fmtMoney(g.abs1)} more on average than graduates of ${lose1} among the schools you’re showing.`;
+
+  let dek = "";
+  if (Math.sign(g.y1) === Math.sign(g.y4)) {
+    if (g.abs4 > g.abs1 * 1.1) {
+      dek = `After four years, that earnings gap widens to about ${fmtMoney(g.abs4)}, with ${win4} still ahead of ${lose4} on average in this slice.`;
+    } else if (g.abs4 < g.abs1 * 0.9) {
+      dek = `After four years, the gap narrows to about ${fmtMoney(g.abs4)} on average—${win4} still leads, but the distance gets smaller.`;
+    } else {
+      dek = `After four years, the gap is still near ${fmtMoney(g.abs4)} on average—roughly the same ballpark as the first year out.`;
+    }
+  } else {
+    dek = `After four years, the picture shifts: graduates of ${win4} average about ${fmtMoney(g.abs4)} more than graduates of ${lose4}—so the ranking flips between the two horizons; dig into individual campuses before treating this as a rule.`;
+  }
+  return { hed, dek };
+}
+
+function pearsonForEarnField(plotRows, mode, earnField) {
+  const xs = [];
+  const ys = [];
+  for (const r of plotRows) {
+    const x = r[mode.xField];
+    const y = r[earnField];
+    if (x == null || y == null || !Number.isFinite(x) || !Number.isFinite(y)) continue;
+    xs.push(x);
+    ys.push(y);
+  }
+  return xs.length >= 25 ? pearsonCorrelation(xs, ys) : null;
+}
+
+function correlationYearVoice(modeKey, r1, r4) {
+  const strong = (r) => r != null && Math.abs(r) >= 0.12;
+  if (!strong(r1) && !strong(r4)) return null;
+
+  let second = "";
+  if (strong(r1) && strong(r4)) {
+    if (Math.abs(r4) > Math.abs(r1) * 1.08) second = " After four years, that same tilt looks a bit stronger on average.";
+    else if (Math.abs(r4) < Math.abs(r1) * 0.92) second = " After four years, the tilt eases a little but still points the same way on average.";
+    else second = " After four years, the picture is about as tilted as it is one year out.";
+  } else if (strong(r4)) {
+    second = " Looking four years out, that same direction still shows up for typical pay.";
+  } else {
+    second = " Looking four years out, the pattern is similar though a few campuses flip the story.";
+  }
+
+  if (modeKey === "debt") {
+    if ((strong(r4) ? r4 : r1) < 0) {
+      return `One year after graduation, graduates from schools with heavier typical borrowing more often sit lower on typical pay in this cloud.${second}`;
+    }
+    return `One year after graduation, heavier borrowing and higher pay often rise together for many of these campuses—money and outcomes are tangled, not simple opposites.${second}`;
+  }
+  if (modeKey === "adm") {
+    if ((strong(r4) ? r4 : r1) < 0) {
+      return `One year after graduation, pickier schools that admit a smaller share of applicants more often sit higher on typical pay here.${second}`;
+    }
+    return `One year after graduation, schools that admit a larger share of applicants more often sit a bit higher on typical pay here.${second}`;
+  }
+  if (modeKey === "tuition" || modeKey === "tuitionOut") {
+    if ((strong(r4) ? r4 : r1) < 0) {
+      return `One year after graduation, higher sticker tuition more often lines up with somewhat lower typical pay among these campuses.${second}`;
+    }
+    return `One year after graduation, higher sticker tuition and higher typical pay often rise together for many campuses here.${second}`;
+  }
+  return null;
+}
+
 function rowEligibleForPlot(r, sliderIndex, modeKey) {
   const mode = chartModes[modeKey];
   const f = earningsSliderLabels[sliderIndex].field;
@@ -232,42 +365,20 @@ function pearsonCorrelation(xs, ys) {
   return Number.isFinite(r) ? r : null;
 }
 
-function wrapVizTrendStack(hed, dek, bodyInnerHtml) {
-  return `
-    <div class="viz-trend-stack">
-      <p class="viz-trend-hed">${hed}</p>
-      ${dek ? `<p class="viz-trend-dek">${dek}</p>` : ""}
-      <div class="viz-trend-body">${bodyInnerHtml}</div>
-    </div>`;
-}
-
-function buildTrendsNarrative(stats, plotRows, mode, field, earningsLabel) {
+/**
+ * Short trend bullets for the pull strip — plain language, big-picture patterns.
+ */
+function buildScatterCalloutLines(stats, plotRows, mode, modeKey, field, earningsLabel, rows) {
   const fmtMoney = (x) => `$${Math.round(x).toLocaleString("en-US")}`;
+  const bottomTopic = plainBottomAxisTopic(modeKey);
   const nShown = plotRows.length;
-  const xt = mode.title;
-
   if (nShown === 0) {
-    return wrapVizTrendStack(
-      "The filters erased the canvas.",
-      "Add categories back, set state to “All states”, or switch the horizontal axis so enough colleges qualify.",
-      '<p class="viz-note">Each dot needs earnings on the selected horizon plus a valid value for the current x-axis field.</p>'
-    );
+    return [{ text: "Nothing to show yet—loosen a filter or pick another measure along the bottom.", fill: "#5a6172" }];
   }
 
-  const sumC = Math.max(1, d3.sum(stats, (s) => s.count));
-  const withData = stats.filter((s) => s.count > 0);
-  const biggest = withData.length ? d3.greatest(withData, (s) => s.count) : null;
-
-  const xs = [];
-  const ys = [];
-  for (const r of plotRows) {
-    const x = r[mode.xField];
-    const y = r[field];
-    if (x == null || y == null || !Number.isFinite(x) || !Number.isFinite(y)) continue;
-    xs.push(x);
-    ys.push(y);
-  }
-  const rLin = xs.length >= 25 ? pearsonCorrelation(xs, ys) : null;
+  const r1 = pearsonForEarnField(plotRows, mode, EARN_FIELD_1YR);
+  const r4 = pearsonForEarnField(plotRows, mode, EARN_FIELD_4YR);
+  const corrVoice = correlationYearVoice(modeKey, r1, r4);
 
   const minN = 5;
   const rich = stats.filter((s) => s.count >= minN && s.median != null);
@@ -279,68 +390,102 @@ function buildTrendsNarrative(stats, plotRows, mode, field, earningsLabel) {
     bottom = sorted[sorted.length - 1];
   }
 
-  let hed = "";
-  let dek = "";
-  const extra = [];
+  const lines = [];
 
-  if (top && bottom && top.group !== bottom.group) {
-    hed = `${top.group} leads the pay ladder here; ${bottom.group} anchors the bottom.`;
-    dek = `Median spread on ${earningsLabel.toLowerCase()} is about ${fmtMoney(top.median - bottom.median)} between those segments (each needs at least ${minN} schools).`;
-  }
-
-  if (!hed && rLin != null && Math.abs(rLin) >= 0.12) {
-    const cap = xt.charAt(0).toUpperCase() + xt.slice(1);
-    hed =
-      rLin > 0
-        ? `${cap} and paychecks climb in the same direction in this slice.`
-        : `Where ${xt} runs higher, median earnings skew lower in this window.`;
-    dek = `Rough correlation ${rLin.toFixed(2)} across ${xs.length.toLocaleString()} campuses (${earningsLabel}).`;
-  }
-
-  if (!hed && biggest && biggest.count > 0) {
-    const pct = Math.round((biggest.count / sumC) * 100);
-    hed = `${biggest.group} paints most of the portrait.`;
-    dek = `${pct}% of the ${nShown.toLocaleString()} visible dots belong to that segment.`;
-  }
-
-  if (!hed) {
-    hed = `${nShown.toLocaleString()} institutions made the cut for this pass.`;
-    dek = biggest ? `${biggest.group} still contributes the largest single bloc.` : "";
-  }
-
-  if (top && bottom && top.group !== bottom.group && !(dek && dek.includes("Median spread"))) {
-    extra.push(
-      `<p>Among segments with enough data, ${top.group} medians near ${fmtMoney(top.median)} versus ${fmtMoney(bottom.median)} for ${bottom.group}.</p>`
-    );
-  }
-
-  if (rLin != null && xs.length >= 25) {
-    if (Math.abs(rLin) < 0.12 && !(dek && dek.includes("Rough correlation"))) {
-      extra.push(
-        `<p>${xt.charAt(0).toUpperCase() + xt.slice(1)} and earnings barely line up as a straight story (r ≈ ${rLin.toFixed(2)}), so the cloud stays open.</p>`
-      );
-    } else if (Math.abs(rLin) >= 0.12 && !(dek && dek.includes("Rough correlation"))) {
-      extra.push(
-        `<p>Correlation with ${xt} sits near ${rLin.toFixed(2)} on ${xs.length.toLocaleString()} points—context, not a verdict on any one campus.</p>`
-      );
+  if (categoryVisible(CAT_PRESTIGIOUS) && categoryVisible(CAT_PUBLIC)) {
+    const g = dualYearGapBetweenCategories(rows, CAT_PRESTIGIOUS, CAT_PUBLIC);
+    const pair = hedDekFromDualGap(fmtMoney, g);
+    if (pair) {
+      lines.push({ text: pair.hed, fill: categoryColors[CAT_PRESTIGIOUS] });
+      lines.push({ text: pair.dek, fill: "#5a6172" });
     }
-  } else if (xs.length >= 8 && xs.length < 25) {
-    extra.push(
-      `<p>Only ${xs.length} colleges qualify—too thin to lean on a single slope until you widen filters.</p>`
-    );
   }
 
-  extra.push(
-    '<p class="viz-note">Headline updates live with your controls. “Prestigious” is a private non-profit subset from Scorecard SAT/ACT/admissions heuristics—not an official label.</p>'
-  );
+  const isPrestPublicPair =
+    top &&
+    bottom &&
+    ((top.group === CAT_PRESTIGIOUS && bottom.group === CAT_PUBLIC) ||
+      (top.group === CAT_PUBLIC && bottom.group === CAT_PRESTIGIOUS));
 
-  return wrapVizTrendStack(hed, dek, extra.join(""));
+  if (lines.length < 2 && top && bottom && top.group !== bottom.group && (!isPrestPublicPair || lines.length === 0)) {
+    const g = dualYearGapBetweenCategories(rows, top.group, bottom.group);
+    const pair = hedDekFromDualGap(fmtMoney, g);
+    if (pair) {
+      lines.push({ text: pair.hed, fill: categoryColors[top.group] || "#162033" });
+      lines.push({ text: pair.dek, fill: "#5a6172" });
+    }
+  }
+
+  if (lines.length < 3 && categoryVisible(CAT_PRIVATE_NONPROFIT) && categoryVisible(CAT_PRIVATE_FOR_PROFIT)) {
+    const g = dualYearGapBetweenCategories(rows, CAT_PRIVATE_NONPROFIT, CAT_PRIVATE_FOR_PROFIT);
+    const pair = hedDekFromDualGap(fmtMoney, g);
+    if (pair) {
+      lines.push({ text: pair.hed, fill: categoryColors[CAT_PRIVATE_NONPROFIT] });
+      if (lines.length < 3) lines.push({ text: pair.dek, fill: "#5a6172" });
+    }
+  }
+
+  if (lines.length < 3 && corrVoice) {
+    lines.push({ text: corrVoice, fill: modeKey === "debt" ? "#a63d24" : "#135a4d" });
+  }
+
+  if (lines.length === 0) {
+    lines.push({
+      text: `${nShown.toLocaleString()} campuses match your choices—slide between one year and four years after graduation to see how the story shifts.`,
+      fill: "#162033"
+    });
+  }
+
+  const st = stateFilterActive();
+  if (lines.length < 3 && st) {
+    lines.push({
+      text: `You’re only looking at ${st} right now; opening the filter to all states can change how wide these gaps look.`,
+      fill: "#5a6172"
+    });
+  }
+
+  if (
+    lines.length < 3 &&
+    corrVoice == null &&
+    r1 != null &&
+    r4 != null &&
+    plotRows.length >= 25 &&
+    Math.abs(r1) < 0.12 &&
+    Math.abs(r4) < 0.12
+  ) {
+    lines.push({
+      text: `One year and four years after graduation, pay and ${bottomTopic} still don’t line up in a neat straight line—plenty of schools break the mold.`,
+      fill: "#5a6172"
+    });
+  }
+
+  return lines.slice(0, 3);
 }
 
-function updateTrendsNarrative(stats, plotRows, mode, field, earningsLabel) {
-  const statsContainer = document.getElementById("scatter-stats-container");
-  if (!statsContainer) return;
-  statsContainer.innerHTML = buildTrendsNarrative(stats, plotRows, mode, field, earningsLabel);
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function updateTrendPullCallouts(lines) {
+  const el = document.getElementById("scatter-trend-callouts");
+  if (!el) return;
+  if (!lines || !lines.length) {
+    el.innerHTML = "";
+    el.classList.add("viz-trend-pull--empty");
+    return;
+  }
+  el.classList.remove("viz-trend-pull--empty");
+  const items = lines
+    .map((L) => {
+      const c = L.fill || "#135a4d";
+      return `<li class="viz-trend-pull__item" style="--pull-accent:${escapeHtml(c)}"><span class="viz-trend-pull__text">${escapeHtml(L.text)}</span></li>`;
+    })
+    .join("");
+  el.innerHTML = `<div class="viz-trend-pull__inner"><p class="viz-trend-pull__eyebrow">What stands out</p><ul class="viz-trend-pull__list">${items}</ul></div>`;
 }
 
 function renderScatter(animate = false) {
@@ -384,6 +529,8 @@ function renderScatter(animate = false) {
     root.attr("transform", `translate(${margin.left},${margin.top})`);
   }
 
+  root.select("g.scatter-callouts").remove();
+
   const tDur = 400;
   const ease = d3.easeCubicInOut;
   const tsel = (sel) => (animate ? sel.transition().duration(tDur).ease(ease) : sel);
@@ -424,7 +571,7 @@ function renderScatter(animate = false) {
   const yCap = root
     .select(".scatter-ylabel")
     .attr("transform", "rotate(-90)")
-    .attr("y", -52)
+    .attr("y", -60)
     .attr("x", -height / 2)
     .attr("text-anchor", "middle")
     .attr("fill", "var(--ink)")
@@ -499,26 +646,23 @@ function renderScatter(animate = false) {
       tip.style("opacity", 0);
     });
 
-  const nShown = plotRows.length;
   const stats = summarizeByCategory(rows, sliderIndex, modeKey);
 
   const titleEl = document.getElementById("scatter-chart-title-dynamic");
-  const descEl = document.getElementById("scatter-chart-description");
   if (titleEl) {
     titleEl.textContent = `Earnings vs. ${mode.title}`;
   }
-  if (descEl) {
-    const tuitionNote =
-      modeKey === "tuitionOut"
-        ? "Horizontal axis uses out-of-state tuition."
-        : modeKey === "tuition"
-          ? "Horizontal axis uses in-state tuition."
-          : "";
-    const base = `${nShown.toLocaleString()} campuses after filters. Vertical axis: ${earningsSliderLabels[sliderIndex].label}. Horizontal axis: ${mode.title}.`;
-    descEl.textContent = tuitionNote ? `${base} ${tuitionNote}` : base;
-  }
 
-  updateTrendsNarrative(stats, plotRows, mode, field, earningsSliderLabels[sliderIndex].label);
+  const calloutLines = buildScatterCalloutLines(
+    stats,
+    plotRows,
+    mode,
+    modeKey,
+    field,
+    earningsSliderLabels[sliderIndex].label,
+    rows
+  );
+  updateTrendPullCallouts(calloutLines);
 }
 
 function populateStateFilter(rows) {

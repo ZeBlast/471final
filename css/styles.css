@@ -13,6 +13,10 @@
   --gold: #f0c66b;
   --danger: #c94141;
   --shadow: 0 20px 60px rgba(35, 26, 12, 0.12);
+  /* Section labels + matching dividers (unified page) */
+  --section-learn: #135a4d;
+  --section-explore: #6a5220;
+  --section-compare: #a63d24;
 }
 
 * {
@@ -1068,9 +1072,32 @@ body.page-learn.page-explore .viz-index-lede {
 }
 
 body.page-learn.page-explore main > .viz-article + .viz-article {
-  margin-top: 44px;
-  padding-top: 40px;
-  border-top: 1px solid rgba(22, 32, 51, 0.12);
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
+/* Unified index only: strong dividers between major sections */
+body.page-learn.page-explore #explore.viz-article {
+  margin-top: 52px;
+  padding-top: 48px;
+  border-top: 4px solid var(--section-explore);
+  box-shadow: inset 0 14px 0 color-mix(in srgb, var(--section-explore) 14%, transparent);
+}
+
+body.page-learn.page-explore #decide.viz-article {
+  margin-top: 56px;
+  padding-top: 48px;
+  border-top: 4px solid var(--section-compare);
+  box-shadow: inset 0 14px 0 color-mix(in srgb, var(--section-compare) 14%, transparent);
+}
+
+/* Split editorial intro from the Learn chart block on the unified page */
+body.page-learn.page-explore #learn > .viz-headline:has(.viz-section-prefix) {
+  margin-top: 40px;
+  padding-top: 36px;
+  border-top: 3px solid var(--section-learn);
+  box-shadow: inset 0 12px 0 color-mix(in srgb, var(--section-learn) 12%, transparent);
 }
 
 body.page-learn .viz-article,
@@ -1128,6 +1155,50 @@ body.page-explore .viz-headline {
   color: var(--ink);
 }
 
+body.page-learn .viz-headline:has(.viz-section-prefix),
+body.page-explore .viz-headline:has(.viz-section-prefix) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35em 0.65em;
+  font-family: "Source Sans 3", system-ui, sans-serif;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.28;
+  letter-spacing: normal;
+}
+
+body.page-learn .viz-headline:has(.viz-section-prefix) .viz-section-prefix,
+body.page-explore .viz-headline:has(.viz-section-prefix) .viz-section-prefix {
+  flex: 0 0 auto;
+  font-family: "Source Sans 3", system-ui, sans-serif;
+  font-weight: 800;
+  font-size: clamp(1.28rem, 3.35vw, 1.72rem);
+  line-height: 1.1;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--section-learn);
+}
+
+body.page-learn .viz-headline:has(.viz-section-prefix) .viz-section-rest,
+body.page-explore .viz-headline:has(.viz-section-prefix) .viz-section-rest {
+  flex: 1 1 min(100%, 16rem);
+  font-family: "Newsreader", "Georgia", serif;
+  font-weight: 700;
+  font-size: clamp(1.28rem, 3.35vw, 1.72rem);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+#explore .viz-headline:has(.viz-section-prefix) .viz-section-prefix {
+  color: var(--section-explore);
+}
+
+#decide .viz-headline:has(.viz-section-prefix) .viz-section-prefix {
+  color: var(--section-compare);
+}
+
 body.page-learn .viz-deck,
 body.page-explore .viz-deck {
   margin: 0 0 18px;
@@ -1145,27 +1216,35 @@ body.page-explore .viz-article-intro {
   color: #3a4152;
 }
 
-body.page-learn .viz-headline .viz-section-prefix,
-body.page-explore .viz-headline .viz-section-prefix {
-  font-family: "Source Sans 3", system-ui, sans-serif;
-  font-weight: 700;
-  font-size: 0.42em;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-right: 0.45em;
-  vertical-align: 0.1em;
+body.page-learn .viz-chart-title:has(.viz-section-prefix),
+body.page-explore .viz-chart-title:has(.viz-section-prefix) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3em 0.5em;
+  font-size: 1rem;
+  line-height: 1.25;
 }
 
-body.page-learn .viz-chart-title .viz-section-prefix,
-body.page-explore .viz-chart-title .viz-section-prefix {
+body.page-learn .viz-chart-title:has(.viz-section-prefix) .viz-section-prefix,
+body.page-explore .viz-chart-title:has(.viz-section-prefix) .viz-section-prefix {
+  flex: 0 0 auto;
   font-family: "Source Sans 3", system-ui, sans-serif;
-  font-weight: 700;
-  font-size: 0.68em;
-  letter-spacing: 0.1em;
+  font-weight: 800;
+  font-size: clamp(1.12rem, 2.5vw, 1.38rem);
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--muted);
-  margin-right: 0.35em;
+  color: var(--section-learn);
+}
+
+body.page-learn .viz-chart-title:has(.viz-section-prefix) .viz-section-rest,
+body.page-explore .viz-chart-title:has(.viz-section-prefix) .viz-section-rest {
+  flex: 1 1 min(100%, 12rem);
+  font-family: "Newsreader", "Georgia", serif;
+  font-weight: 700;
+  font-size: clamp(1.12rem, 2.5vw, 1.38rem);
+  letter-spacing: -0.015em;
+  color: var(--ink);
 }
 
 body.page-learn .viz-byline,
@@ -1443,6 +1522,70 @@ body.page-learn .viz-figure__header {
   gap: 14px 20px;
   align-items: flex-end;
   margin-bottom: 12px;
+}
+
+body.page-learn .viz-trend-pull {
+  margin: 0 0 14px;
+}
+
+body.page-learn .viz-trend-pull--empty {
+  display: none;
+  margin: 0;
+}
+
+body.page-learn .viz-trend-pull__inner {
+  padding: 14px 16px 15px 18px;
+  border-left: 4px solid var(--section-learn);
+  background: linear-gradient(180deg, rgba(255, 252, 248, 0.98) 0%, rgba(252, 248, 240, 0.93) 100%);
+  box-shadow: inset 0 0 0 1px rgba(22, 32, 51, 0.06);
+}
+
+body.page-learn .viz-trend-pull__eyebrow {
+  margin: 0 0 11px;
+  font-family: "Source Sans 3", system-ui, sans-serif;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+body.page-learn .viz-trend-pull__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+body.page-learn .viz-trend-pull__item {
+  position: relative;
+  margin: 0 0 12px;
+  padding-left: 1.2rem;
+  font-family: "Newsreader", "Georgia", serif;
+  font-size: 1.06rem;
+  line-height: 1.42;
+  font-weight: 600;
+  letter-spacing: -0.012em;
+  color: var(--ink);
+}
+
+body.page-learn .viz-trend-pull__item:last-child {
+  margin-bottom: 0;
+}
+
+body.page-learn .viz-trend-pull__item::before {
+  content: "";
+  position: absolute;
+  left: 0.05rem;
+  top: 0.52em;
+  width: 0.32em;
+  height: 0.32em;
+  border-radius: 1px;
+  background: var(--pull-accent, var(--section-learn));
+  transform: rotate(45deg);
+}
+
+body.page-learn .viz-trend-pull__text {
+  display: block;
 }
 
 body.page-learn .viz-chart-title,

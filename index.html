@@ -27,11 +27,9 @@
         <header class="viz-mast">
           <p class="viz-kicker">College Scorecard · Institutions</p>
           <h1 class="viz-headline">What do graduates earn after college?</h1>
-          <p class="viz-article-intro">
-            This article plots every campus as one dot so you can see how median earnings after completion relate to admissions, debt, or tuition before you open the map or compare saved schools.
-          </p>
+
           <p class="viz-deck">
-            Each dot is a campus with reported median earnings after completion. Color encodes who owns the school—public, private non-profit, private for-profit, or a selective slice of private non-profit we label “Prestigious” from Scorecard signals. Use the controls to change what sits on the horizontal axis and which earnings horizon is on the vertical scale.
+            The U.S. Department of Education College Scorecard publishes median earnings for students after they leave college, which can be an indicator for whether a degree pays off. This webpage starts with those earnings plotted against admissions, debt, and tuition so you can see where institutions cluster and who sits above or below the pattern. From there, the same underlying file is mapped across the country, then narrowed again so you can pull a short list of schools into a side-by-side comparison.
           </p>
           <p class="viz-byline">
             <span>Source:</span> U.S. Department of Education College Scorecard, most-recent institution file. Map and comparison below use the same extract.
@@ -44,11 +42,13 @@
           </p>
         </aside>
 
-        <section class="viz-trend-section" aria-label="Trend headline">
-          <div id="scatter-stats-container" class="viz-trend-host" aria-live="polite">
+        <h1 class="viz-headline"><span class="viz-section-prefix">Learn:</span> <span class="viz-section-rest">Identify institution trends of post-college earnings</span></h1>
+
+        <section class="viz-trend-section" aria-label="How to read this chart">
+          <div class="viz-trend-host">
             <div class="viz-trend-stack">
-              <p class="viz-trend-hed">Loading the read on this chart…</p>
-              <p class="viz-trend-dek">Once data arrive, a headline summary of the current filters appears here.</p>
+              <p class="viz-trend-hed">How to read this chart</p>
+              <p class="viz-trend-dek">Each dot is one campus. Adjust who appears, which state you include, what sits on the horizontal axis, and whether the vertical axis is pay one year or four years after completion. Takeaways that react to your filters appear under <strong>What stands out</strong> just above the plot.</p>
             </div>
           </div>
         </section>
@@ -91,7 +91,7 @@
 
         <figure class="viz-chart-bleed viz-figure" aria-label="Scatter chart">
           <div class="viz-figure__header">
-            <h2 class="viz-chart-title" id="scatter-chart-title"><span class="viz-section-prefix">Learn:</span> <span id="scatter-chart-title-dynamic">Earnings vs. admission rate</span></h2>
+            <h2 class="viz-chart-title" id="scatter-chart-title"> <span id="scatter-chart-title-dynamic" class="viz-section-rest">Earnings vs. admission rate</span></h2>
             <div class="viz-legend legend" aria-hidden="false">
               <span><i class="legend-swatch" style="background: #1f8a70"></i>Public</span>
               <span><i class="legend-swatch" style="background: #c9a227"></i>Private non-profit</span>
@@ -99,11 +99,12 @@
               <span><i class="legend-swatch" style="background: #7c3aed"></i>Prestigious</span>
             </div>
           </div>
+          <aside id="scatter-trend-callouts" class="viz-trend-pull viz-trend-pull--empty" aria-label="Trend notes for the current chart filters" aria-live="polite"></aside>
           <div class="scatter-chart-wrap">
             <svg id="earnings-scatter-chart" aria-label="Scatter of median earnings versus selected measure"></svg>
             <div id="scatter-tooltip" class="scatter-tooltip" aria-live="polite"></div>
           </div>
-          <figcaption class="viz-caption" id="scatter-chart-description">Loading…</figcaption>
+          <figcaption class="viz-caption" id="scatter-chart-description">Hover any dot for the campus name, state, and values. The vertical axis follows the earnings horizon you choose; the horizontal axis follows the control above the chart.</figcaption>
         </figure>
 
         <footer class="viz-footer">
@@ -113,10 +114,10 @@
 
       <article class="viz-article" id="explore">
         <header class="viz-mast">
-          <p class="viz-kicker">College Scorecard · Geography</p>
-          <h1 class="viz-headline"><span class="viz-section-prefix">Explore:</span> Pan and zoom the United States; color encodes one measure and dot size another on every campus with coordinates.</h1>
+      
+          <h1 class="viz-headline"><span class="viz-section-prefix">Explore:</span> <span class="viz-section-rest">Pan and zoom the United States; color encodes one measure and dot size another on every campus with coordinates.</span></h1>
           <p class="viz-deck">
-            Hover for detail and click to stage a school for the comparison tray. The same Scorecard extract as Learn; campuses missing lat/long are omitted here but remain searchable in Compare.
+            Hover for detail and click to stage a school for the comparison tray.
           </p>
           <p class="viz-byline">
             <span>Source:</span> College Scorecard institution and field-of-study extracts in <code>data/college_scorecard_data/</code>. Map dots require lat/long; search in Compare covers the full parsed list.
@@ -191,7 +192,7 @@
 
       <article class="viz-article viz-article--decide" id="decide">
         <header class="viz-mast viz-mast--sub">
-          <h1 class="viz-headline"><span class="viz-section-prefix">Compare:</span> Search or reuse map picks, then stack institutions side by side on tuition and aid.</h1>
+          <h1 class="viz-headline"><span class="viz-section-prefix">Compare:</span> <span class="viz-section-rest">Search or reuse map picks, then stack institutions side by side on tuition and aid.</span></h1>
           <p class="viz-deck">
             Tuition view toggles in-state versus out-of-state sticker price for the small multiples. Charts reuse the same parsed Scorecard rows as the map.
           </p>
