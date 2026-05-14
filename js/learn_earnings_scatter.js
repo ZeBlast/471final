@@ -182,6 +182,21 @@ function stateFilterActive() {
   return v === "" ? null : v;
 }
 
+function scatterStateBadgeText() {
+  const abbr = stateFilterActive();
+  if (abbr == null) return "All states";
+  const fmt = globalThis.usStateNames?.formatUsStateAbbrForDisplay;
+  return fmt ? fmt(abbr) : abbr;
+}
+
+function updateScatterStateLabel() {
+  const el = document.getElementById("scatter-state-label");
+  if (!el) return;
+  const text = scatterStateBadgeText();
+  el.textContent = text;
+  el.setAttribute("aria-label", `State filter: ${text}`);
+}
+
 function passesFilters(d) {
   if (!categoryVisible(d.category)) return false;
   const st = stateFilterActive();
@@ -634,7 +649,7 @@ function renderScatter(animate = false) {
       const si = scatterState.sliderIndex;
       const fld = earningsSliderLabels[si].field;
       tip.style("opacity", 1).html(
-        `<strong>${d.name}</strong><br>${d.state} · ${d.category}<br>${m.formatXTip(xv)}<br>${earningsSliderLabels[si].label}: ${fmtMoney(d[fld])}`
+        `<strong>${d.name}</strong><br>${globalThis.usStateNames?.formatUsStateAbbrForDisplay(d.state) ?? d.state} · ${d.category}<br>${m.formatXTip(xv)}<br>${earningsSliderLabels[si].label}: ${fmtMoney(d[fld])}`
       );
     })
     .on("mousemove", (event) => {
@@ -663,6 +678,7 @@ function renderScatter(animate = false) {
     rows
   );
   updateTrendPullCallouts(calloutLines);
+  updateScatterStateLabel();
 }
 
 function populateStateFilter(rows) {
@@ -670,10 +686,11 @@ function populateStateFilter(rows) {
   const current = sel.value;
   const states = [...new Set(rows.map((r) => r.state).filter(Boolean))].sort();
   sel.innerHTML = '<option value="">All states</option>';
+  const fmt = globalThis.usStateNames?.formatUsStateAbbrForDisplay;
   for (const st of states) {
     const opt = document.createElement("option");
     opt.value = st;
-    opt.textContent = st;
+    opt.textContent = fmt ? fmt(st) : st;
     sel.appendChild(opt);
   }
   if (states.includes(current)) sel.value = current;

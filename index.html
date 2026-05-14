@@ -41,16 +41,16 @@
           <h1 class="viz-headline">What do graduates earn after college?</h1>
 
           <p class="viz-deck">
-            The U.S. Department of Education College Scorecard publishes median earnings for students after they leave college, which can be an indicator for whether a degree pays off. This webpage starts with those earnings plotted against admissions, debt, and tuition so you can see where institutions cluster and who sits above or below the pattern. From there, the same underlying file is mapped across the country, then narrowed again so you can pull a short list of schools into a side-by-side comparison.
+            The U.S. Department of Education College Scorecard publishes median earnings for students after they leave college, which can be an indicator for whether a degree pays off. This webpage starts with those earnings plotted against admissions, debt, and tuition so you can see where institutions cluster and who sits above or below the pattern. From there, the same measures are mapped across the country, then narrowed again so you can pull a short list of schools into a side-by-side comparison.
           </p>
           <p class="viz-byline">
-            <span>Source:</span> U.S. Department of Education College Scorecard, most-recent institution data.
+            <span>Source:</span> U.S. Department of Education College Scorecard (latest college-level figures).
           </p>
         </header>
 
         <aside class="viz-method" aria-label="Method note (scatter)">
           <p>
-            Median earnings are <strong>after completion</strong> only—one year and four years out—drawn from the same fields used on the map. Graduate debt uses median debt for completers. Tuition modes use published in-state or out-of-state tuition; admission rate is the share admitted.
+            Median earnings are <strong>after completion</strong> only—one year and four years out—the same horizons as on the map. Debt is median borrowing for students who finished, not including parent loans. Tuition is published in-state or out-of-state sticker price; admission rate is the share of applicants admitted.
           </p>
         </aside>
 
@@ -113,6 +113,7 @@
           </div>
           <aside id="scatter-trend-callouts" class="viz-trend-pull viz-trend-pull--empty" aria-label="Trend notes for the current chart filters" aria-live="polite"></aside>
           <div class="scatter-chart-wrap">
+            <div id="scatter-state-label" class="scatter-state-label" aria-live="polite" aria-atomic="true"></div>
             <svg id="earnings-scatter-chart" aria-label="Scatter of median earnings versus selected measure"></svg>
             <div id="scatter-tooltip" class="scatter-tooltip" aria-live="polite"></div>
           </div>
@@ -129,10 +130,10 @@
       
           <h1 class="viz-headline"><span class="viz-section-prefix">Explore:</span> <span class="viz-section-rest">Pan and zoom the United States; color encodes one measure and dot size another on every campus with coordinates.</span></h1>
           <p class="viz-deck">
-            Hover for detail and click to stage a school for the comparison tray.
+            Hover a dot for detail; open the preview card, then use <strong>Save to Compare</strong> to add a school to your tray.
           </p>
           <p class="viz-byline">
-            <span>Source:</span> College Scorecard institution and field-of-study extracts in <code>data/college_scorecard_data/</code>. Map dots require lat/long; search in Compare covers the full parsed list.
+            <span>Source:</span> College Scorecard college-level data and program-level supplements. Only schools with map coordinates appear as dots; Compare search still includes the full college list.
           </p>
         </header>
 
@@ -150,7 +151,7 @@
                 <option value="earn1YrAfterCompMdn">Median earnings, 1 year after completion</option>
                 <option value="earn4YrAfterCompMdn" selected>Median earnings, 4 years after completion</option>
                 <option value="earningsDebtRatio">Earnings-to-debt ratio</option>
-                <option value="completerDebt">Completer debt</option>
+                <option value="completerDebt">Median graduate debt</option>
                 <option value="tuitionInState">In-state tuition</option>
                 <option value="pellGrantRate">Pell grant rate</option>
               </select>
@@ -164,8 +165,8 @@
               <select id="map-size">
                 <option value="earn1YrAfterCompMdn">Median earnings, 1 year after completion</option>
                 <option value="earn4YrAfterCompMdn" selected>Median earnings, 4 years after completion</option>
-                <option value="tuitionInState">In-state tuition (TUITIONFEE_IN, same as Learn)</option>
-                <option value="completerDebt">Completer debt</option>
+                <option value="tuitionInState">In-state tuition (same measure as Learn)</option>
+                <option value="completerDebt">Median graduate debt</option>
               </select>
             </div>
           </div>
@@ -173,40 +174,39 @@
 
         <div class="viz-chart-bleed viz-explore-split">
           <figure class="viz-figure viz-figure--map" aria-label="United States map of colleges">
-            <div class="viz-figure__header viz-figure__header--map">
-              <h2 class="viz-chart-title viz-chart-title--map-hed">U.S. map</h2>
-              <p class="viz-lede">Warm colors lean toward lower values on the metric you pick; cool teal marks higher values. Use zoom controls or scroll to focus a coast or a corridor.</p>
+            <div class="viz-figure__map-headrow">
+              <div class="viz-figure__header viz-figure__header--map">
+                <h2 class="viz-chart-title viz-chart-title--map-hed">U.S. map</h2>
+                <p class="viz-lede">Warm colors lean toward lower values on the metric you pick; cool teal marks higher values. Use zoom controls or scroll to focus a coast or a corridor.</p>
+              </div>
             </div>
             <div id="map-legend" class="map-legend map-legend--explore" aria-label="Map color scale"></div>
             <div id="back-to-country-container" class="back-to-country-container">
               <button id="back-to-country" title="Back to all states" class="hidden">← All states</button>
             </div>
             <div class="map-wrap">
-              <div class="map-zoom-controls">
-                <button id="zoom-in" title="Zoom in">+</button>
-                <button id="zoom-reset" title="Reset zoom">⟳</button>
-                <button id="zoom-out" title="Zoom out">−</button>
+              <div class="map-overlay-top">
+                <aside class="map-college-widget" id="map-college-widget" data-widget-state="idle" aria-label="College preview">
+                  <div id="college-card" class="college-card college-card--map-widget"></div>
+                </aside>
+                <div class="map-zoom-controls">
+                  <button id="zoom-in" title="Zoom in">+</button>
+                  <button id="zoom-reset" title="Reset zoom">⟳</button>
+                  <button id="zoom-out" title="Zoom out">−</button>
+                </div>
               </div>
               <svg id="us-map" aria-label="College Scorecard institution map"></svg>
               <div id="map-tooltip" class="tooltip hidden"></div>
             </div>
           </figure>
-
-          <aside class="viz-insight" aria-label="Selected college">
-            <h2 class="viz-chart-title viz-chart-title--minor">Hover or click a campus</h2>
-            <p class="viz-caption viz-caption--tight">Details for the point under your cursor. Click to add the campus to your tray in Compare.</p>
-            <div id="college-card" class="college-card">
-              <p>Hover a college point on the map to inspect details here.</p>
-            </div>
-          </aside>
         </div>
       </article>
 
       <article class="viz-article viz-article--decide" id="decide">
         <header class="viz-mast viz-mast--sub">
-          <h1 class="viz-headline"><span class="viz-section-prefix">Compare:</span> <span class="viz-section-rest">Search or reuse map picks, then stack institutions side by side on tuition and aid.</span></h1>
+          <h1 class="viz-headline"><span class="viz-section-prefix">Compare:</span> <span class="viz-section-rest">Search or reuse map picks, then stack institutions side by side on tuition, earnings, and debt.</span></h1>
           <p class="viz-deck">
-            Tuition view toggles in-state versus out-of-state sticker price for the small multiples. Charts reuse the same parsed Scorecard rows as the map.
+            Tuition view toggles in-state versus out-of-state sticker price for the small multiples. Charts draw on the same college-level data as the map.
           </p>
         </header>
 
@@ -235,7 +235,6 @@
               </select>
             </div>
           </div>
-          <div id="saved-colleges"></div>
           <div class="projection-charts"></div>
         </div>
       </article>
@@ -245,6 +244,7 @@
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
   <script src="js/app_loading.js"></script>
+  <script src="js/us_state_names.js"></script>
   <script src="js/learn_earnings_scatter.js"></script>
   <script src="js/new_script.js"></script>
 </body>

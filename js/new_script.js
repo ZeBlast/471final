@@ -23,10 +23,10 @@ const DEFAULT_EARNINGS_METRIC = "earn4YrAfterCompMdn";
 
 const metricLabels = {
   ...Object.fromEntries(EARNINGS_SERIES.map((s) => [s.key, s.mapLabel])),
-  earningsDebtRatio: "Earnings-to-debt ratio (1-year median earnings ÷ completer debt)",
-  completerDebt: "Median graduate debt (completers)",
-  tuitionInState: "In-state tuition (TUITIONFEE_IN)",
-  tuitionOutState: "Out-of-state tuition",
+  earningsDebtRatio: "Earnings-to-debt ratio (one-year median pay ÷ median graduate debt)",
+  completerDebt: "Median graduate debt",
+  tuitionInState: "Published in-state tuition",
+  tuitionOutState: "Published out-of-state tuition",
   pellGrantRate: "Pell grant rate",
   totalCostEstimate: "Estimated annual cost",
   monthlyPayment: "Monthly payment"
@@ -44,6 +44,15 @@ function mapMetricOptionKeys() {
 
 function mapSizeOptionKeys() {
   return [...EARNINGS_SERIES.map((s) => s.key), "tuitionInState", "completerDebt"];
+}
+
+function displayStateAbbr(abbr) {
+  const fmt = globalThis.usStateNames?.formatUsStateAbbrForDisplay;
+  return fmt ? fmt(abbr) : abbr;
+}
+
+function mapStateSelectOptionLabel(d) {
+  return d === "All States" ? d : displayStateAbbr(d);
 }
 
 function ensureMapMetricAndSizeValid() {
@@ -153,7 +162,7 @@ async function initialize() {
 
     refreshScorecardRows();
 
-    populateSelect("#map-state", state.stateOptions, state.selectedState);
+    populateSelect("#map-state", state.stateOptions, state.selectedState, mapStateSelectOptionLabel);
     refreshMapMetricAndSizeSelects();
 
     initializeControls();
@@ -164,7 +173,6 @@ async function initialize() {
       d3.select("#map-state").property("value", "All States");
       renderMapSection();
     });
-    renderSavedColleges();
     renderProjectionSection();
     renderDecideSearchHint();
     await renderMapSection();
@@ -284,7 +292,7 @@ function initializeDecideControls() {
   }
 
   const states = ["All States", ...Array.from(new Set(state.allInstitutions.map((d) => d.state))).sort(d3.ascending)];
-  populateSelect("#decide-search-state", states, "All States");
+  populateSelect("#decide-search-state", states, "All States", mapStateSelectOptionLabel);
 
   const onSearch = () => {
     runDecideSearch(searchInput.property("value"), searchState.property("value"));
@@ -305,7 +313,7 @@ function renderDecideSearchHint() {
   box.selectAll("*").remove();
   box.append("p")
     .attr("class", "footnote")
-    .text("Type at least 2 characters to search the full Scorecard institution list, or click a map dot after drilling into a state.");
+    .text("Type at least 2 characters to search the full college list, or use the map preview’s Save to Compare after you open a state.");
 }
 
 function runDecideSearch(query, stateFilter) {
@@ -341,7 +349,7 @@ function runDecideSearch(query, stateFilter) {
   ul.selectAll("li")
     .data(matches)
     .join("li")
-    .html((d) => `<button type="button" class="decide-pick-btn" data-unitid="${d.unitid}">${d.name} <span class="meta">— ${d.city || ""}, ${d.state}</span></button>`);
+    .html((d) => `<button type="button" class="decide-pick-btn" data-unitid="${d.unitid}">${d.name} <span class="meta">— ${d.city || ""}, ${displayStateAbbr(d.state)}</span></button>`);
 
   ul.selectAll(".decide-pick-btn").on("click", function() {
     const id = this.getAttribute("data-unitid");
@@ -356,34 +364,11 @@ function runDecideSearch(query, stateFilter) {
 
 function addToSaved(college) {
   if (!college || state.savedColleges.some((c) => String(c.unitid) === String(college.unitid))) {
-    return;
+    return false;
   }
   state.savedColleges.push(college);
-  renderSavedColleges();
   renderProjectionSection();
-}
-
-function renderSavedColleges() {
-  const container = d3.select("#saved-colleges");
-  if (container.empty()) {
-    return;
-  }
-  container.selectAll("*").remove();
-  if (!state.savedColleges.length) {
-    container.append("p").text("No colleges in your comparison yet. Drill into a state on the map and click a dot, or search above.");
-    return;
-  }
-  const list = container.append("ul").attr("class", "saved-colleges-list");
-  list.selectAll("li")
-    .data(state.savedColleges)
-    .join("li")
-    .html((d) => `<span>${d.name} (${d.state})</span><button class="remove-btn" data-unitid="${d.unitid}">Remove</button>`);
-  list.selectAll(".remove-btn").on("click", function() {
-    const id = this.getAttribute("data-unitid");
-    state.savedColleges = state.savedColleges.filter((c) => String(c.unitid) !== String(id));
-    renderSavedColleges();
-    renderProjectionSection();
-  });
+  return true;
 }
 
 function renderEmptySvgMessage(svg, width, height, message) {
@@ -396,7 +381,94 @@ function renderEmptySvgMessage(svg, width, height, message) {
 }
 
 function dataCohortCaption() {
-  return "College Scorecard (most recent cohort extract)";
+  return "College Scorecard, most recent release";
+}
+
+/** Among compared institutions, who ties for best value on each metric (min = lower cost/risk, max = higher pay or ratio). */
+function unitidsAtNumericExtreme(colleges, valueFn, mode) {
+  const pairs = colleges
+    .map((c) => ({ id: String(c.unitid), v: valueFn(c) }))
+    .filter((p) => p.v != null && Number.isFinite(p.v));
+  if (!pairs.length) {
+    return new Set();
+  }
+  const nums = pairs.map((p) => p.v);
+  const target = mode === "min" ? d3.min(nums) : d3.max(nums);
+  return new Set(pairs.filter((p) => p.v === target).map((p) => p.id));
+}
+
+/**
+ * @returns {Map<string, { cls: string, label: string, order: number }[]>}
+ */
+function buildCompareBadgesByUnitId(colleges, tuitionMetric) {
+  const map = new Map();
+  const push = (uid, entry) => {
+    const k = String(uid);
+    if (!map.has(k)) {
+      map.set(k, []);
+    }
+    map.get(k).push(entry);
+  };
+
+  if (colleges.length < 2) {
+    return map;
+  }
+
+  const displayDebt = (c) => {
+    const v = c.completerDebt ?? c.medianDebtOverall;
+    return v != null && Number.isFinite(v) && v >= 0 ? v : null;
+  };
+
+  const displayTuition = (c) => {
+    const v = c[tuitionMetric] ?? c.tuitionInState;
+    return v != null && Number.isFinite(v) && v > 0 ? v : null;
+  };
+
+  const tuitionLabel = tuitionMetric === "tuitionOutState"
+    ? "Lowest out-of-state tuition"
+    : "Lowest in-state tuition";
+
+  for (const uid of unitidsAtNumericExtreme(colleges, displayDebt, "min")) {
+    push(uid, { cls: "compare-alert--debt", label: "Lowest debt", order: 0 });
+  }
+  for (const uid of unitidsAtNumericExtreme(colleges, displayTuition, "min")) {
+    push(uid, { cls: "compare-alert--tuition", label: tuitionLabel, order: 1 });
+  }
+  for (const uid of unitidsAtNumericExtreme(colleges, (c) => c.earn4YrAfterCompMdn, "max")) {
+    push(uid, { cls: "compare-alert--earn-4", label: "Highest 4-yr earnings", order: 2 });
+  }
+  for (const uid of unitidsAtNumericExtreme(colleges, (c) => c.earn1YrAfterCompMdn, "max")) {
+    push(uid, { cls: "compare-alert--earn-1", label: "Highest 1-yr earnings", order: 3 });
+  }
+  for (const uid of unitidsAtNumericExtreme(colleges, (c) => c.earningsDebtRatio, "max")) {
+    push(uid, { cls: "compare-alert--ratio", label: "Best pay vs debt", order: 4 });
+  }
+  for (const uid of unitidsAtNumericExtreme(
+    colleges,
+    (c) => (c.monthlyPayment != null && Number.isFinite(c.monthlyPayment) && c.monthlyPayment > 0 ? c.monthlyPayment : null),
+    "min"
+  )) {
+    push(uid, { cls: "compare-alert--payment", label: "Lowest est. monthly payment", order: 5 });
+  }
+  for (const uid of unitidsAtNumericExtreme(
+    colleges,
+    (c) => {
+      const t = displayTuition(c);
+      const e = c.earn4YrAfterCompMdn;
+      if (t == null || e == null || !Number.isFinite(e)) {
+        return null;
+      }
+      return e / t;
+    },
+    "max"
+  )) {
+    push(uid, { cls: "compare-alert--value", label: "Best 4-yr pay vs tuition", order: 6 });
+  }
+
+  for (const [, arr] of map) {
+    arr.sort((a, b) => a.order - b.order);
+  }
+  return map;
 }
 
 function renderProjectionSection() {
@@ -406,25 +478,61 @@ function renderProjectionSection() {
   }
   container.selectAll("*").remove();
 
-  state.savedColleges.forEach((college) => {
+  if (!state.savedColleges.length) {
+    container.append("p")
+      .attr("class", "projection-empty")
+      .text("No colleges in your comparison yet. Pick a school from the map preview (Save to Compare), from search above, or add from Learn.");
+    return;
+  }
+
+  const tuitionMetric = state.projectionResidency;
+  const badgeMap = buildCompareBadgesByUnitId(state.savedColleges, tuitionMetric);
+
+  const collegesInDisplayOrder = [...state.savedColleges].sort((a, b) => {
+    const na = badgeMap.get(String(a.unitid))?.length ?? 0;
+    const nb = badgeMap.get(String(b.unitid))?.length ?? 0;
+    return nb - na;
+  });
+
+  collegesInDisplayOrder.forEach((college) => {
     const article = container.append("article").attr("class", "chart-panel");
-    const tuitionMetric = state.projectionResidency;
     const publishedTuition = college[tuitionMetric] ?? college.tuitionInState;
     const debt = college.completerDebt ?? college.medianDebtOverall ?? 0;
     const tuitionTileLabel = tuitionMetric === "tuitionOutState"
-      ? "Out-of-state tuition (TUITIONFEE_OUT)"
-      : "In-state tuition (TUITIONFEE_IN)";
+      ? "Published out-of-state tuition"
+      : "Published in-state tuition";
 
-    article.append("div").attr("class", "chart-header").html(`
+    const header = article.append("div").attr("class", "chart-header");
+    header.append("div").attr("class", "chart-header-main").html(`
       <div>
         <h3>${college.name}</h3>
-        <p>${college.city || "Unknown city"}, ${college.state} | ${dataCohortCaption()}</p>
+        <p>${college.city || "Unknown city"}, ${displayStateAbbr(college.state)} | ${dataCohortCaption()}</p>
       </div>
     `);
+    header.append("button")
+      .attr("type", "button")
+      .attr("class", "remove-btn chart-panel__remove")
+      .attr("data-unitid", college.unitid)
+      .attr("aria-label", `Remove ${college.name} from comparison`)
+      .text("Remove");
+
+    const badges = badgeMap.get(String(college.unitid));
+    if (badges && badges.length) {
+      const alerts = article.append("div")
+        .attr("class", "chart-panel__alerts")
+        .attr("role", "list")
+        .attr("aria-label", "Best in this comparison for");
+      alerts.selectAll("span.compare-alert")
+        .data(badges)
+        .join("span")
+        .attr("class", (d) => `compare-alert ${d.cls}`)
+        .attr("role", "listitem")
+        .text((d) => d.label);
+    }
 
     article.append("div").attr("class", "summary-tiles").html(`
       <div class="summary-tile">
-        <span class="summary-label">Completer debt</span>
+        <span class="summary-label">Median graduate debt</span>
         <strong>${formatValue("completerDebt", debt)}</strong>
       </div>
       <div class="summary-tile">
@@ -432,13 +540,22 @@ function renderProjectionSection() {
         <strong>${formatValue(tuitionMetric, publishedTuition)}</strong>
       </div>
       <div class="summary-tile">
-        <span class="summary-label">Earnings-to-debt (1-year median earnings ÷ completer debt)</span>
+        <span class="summary-label">Earnings-to-debt ratio (one-year median pay ÷ median graduate debt)</span>
         <strong>${formatValue("earningsDebtRatio", college.earningsDebtRatio)}</strong>
       </div>
     `);
 
     const svg = article.append("svg").attr("aria-label", `Earnings chart for ${college.name}`);
     renderEarningsHorizonChartForCollege(svg, college, debt, publishedTuition);
+  });
+
+  container.selectAll(".chart-panel__remove").on("click", function () {
+    const id = this.getAttribute("data-unitid");
+    state.savedColleges = state.savedColleges.filter((c) => String(c.unitid) !== String(id));
+    renderProjectionSection();
+    if (state.selectedCollege && String(state.selectedCollege.unitid) === String(id)) {
+      updateCollegeCard(state.selectedCollege);
+    }
   });
 }
 
@@ -513,7 +630,7 @@ function renderEarningsHorizonChartForCollege(svg, college, debt, publishedTuiti
       .attr("font-size", 11)
       .attr("fill", "var(--accent)")
       .attr("font-weight", 600)
-      .text("Completer debt");
+      .text("Median graduate debt");
   }
 
   if (cost != null && cost > 0) {
@@ -533,7 +650,7 @@ function renderEarningsHorizonChartForCollege(svg, college, debt, publishedTuiti
       .attr("font-size", 11)
       .attr("fill", "var(--gold)")
       .attr("font-weight", 600)
-      .text("Published tuition (Learn / Explore)");
+      .text("Published tuition (in-state or out-of-state, per toggle)");
   }
 
   const legend = svg.append("g").attr("class", "projection-inline-legend");
@@ -542,7 +659,7 @@ function renderEarningsHorizonChartForCollege(svg, college, debt, publishedTuiti
     .attr("y", 16)
     .attr("font-size", 11)
     .attr("fill", "var(--muted)")
-    .text("Teal: median earnings 1 and 4 years after completion (see dataset note). Gold: published tuition from the toggle.");
+    .text("Teal: median earnings one and four years after completion. Gold: published tuition for the in-state / out-of-state view you chose.");
 
   svg.append("g")
     .selectAll("circle")
@@ -1099,7 +1216,6 @@ async function renderMapSection() {
         .on("mouseout", () => hideTooltip(tooltip))
         .on("click", (event, d) => {
           selectCollege(d);
-          addToSaved(d);
         });
 
       const identityTransform = d3.zoomIdentity;
@@ -1133,15 +1249,13 @@ async function renderMapSection() {
   d3.select("#back-to-country").classed("hidden", state.selectedState === "All States");
 
   if (state.selectedState === "All States") {
-    d3.select("#college-card").html(
-      `<p>Click a state to inspect institution-level outcomes.</p>`
-    );
+    setMapCollegeWidgetState("idle");
+    d3.select("#college-card").html(`<p class="map-widget-idle">Choose a state to load dots</p>`);
   } else if (state.selectedCollege) {
     updateCollegeCard(state.selectedCollege);
   } else {
-    d3.select("#college-card").html(
-      `<p>Click an institution dot to preview the profile and add it to Section 3 below.</p>`
-    );
+    setMapCollegeWidgetState("idle");
+    d3.select("#college-card").html(`<p class="map-widget-idle">Click a dot for details</p>`);
   }
 }
 
@@ -1149,10 +1263,10 @@ function showTooltip(d, event, width, height, mapWrap, tooltip) {
   tooltip.classed("hidden", false)
     .html(`
       <strong>${d.name}</strong>
-      <p class="meta">${d.city || "Unknown city"}, ${d.state}</p>
+      <p class="meta">${d.city || "Unknown city"}, ${displayStateAbbr(d.state)}</p>
       <p>${metricLabels[state.mapMetric]}: ${formatValue(state.mapMetric, d[state.mapMetric])}</p>
       <p>${metricLabels[state.mapSize]}: ${formatValue(state.mapSize, d[state.mapSize])}</p>
-      <p class="meta" style="margin-top:6px;color:var(--teal)">Click the point to preview the card and add to Decide below.</p>
+      <p class="meta" style="margin-top:6px;color:var(--teal)">Click the point to preview; use Save to Compare in the card to add.</p>
     `);
   moveTooltip(event, width, height, mapWrap, tooltip);
 }
@@ -1173,6 +1287,16 @@ function hideTooltip(tooltip) {
 function selectCollege(college) {
   state.selectedCollege = college;
   updateCollegeCard(college);
+}
+
+function clearCollegePreview() {
+  state.selectedCollege = null;
+  setMapCollegeWidgetState("idle");
+  if (state.selectedState === "All States") {
+    d3.select("#college-card").html(`<p class="map-widget-idle">Choose a state to load dots</p>`);
+  } else {
+    d3.select("#college-card").html(`<p class="map-widget-idle">Click a dot for details</p>`);
+  }
 }
 
 function renderLegend(colorScale, extent) {
@@ -1200,59 +1324,69 @@ function renderLegend(colorScale, extent) {
   legend.append("span").attr("class", "map-legend-hint").text(hint);
 }
 
+function setMapCollegeWidgetState(state) {
+  const w = document.getElementById("map-college-widget");
+  if (w) w.dataset.widgetState = state;
+}
+
+function escapeHtml(str) {
+  if (str == null) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
 function updateCollegeCard(college) {
+  setMapCollegeWidgetState("detail");
   const matchingFOS = state.fieldOfStudyRows
     .filter((row) => String(row.unitid) === String(college.unitid))
     .sort((a, b) => d3.descending(a.earnCount1yr, b.earnCount1yr))
     .slice(0, 3);
 
-  const fosHtml = matchingFOS.length
-    ? `<div class="metric-grid">
-        <div class="metric-tile">
-          <span>Top major</span>
-          <strong>${matchingFOS[0].cipDesc || "N/A"}</strong>
-        </div>
-        <div class="metric-tile">
-          <span>Major median (1 year after program)</span>
-          <strong>${formatValue("earn1YrAfterCompMdn", matchingFOS[0].earnMdn1yr)}</strong>
-        </div>
-        <div class="metric-tile">
-          <span>Majors with data</span>
-          <strong>${matchingFOS.length}</strong>
-        </div>
-      </div>`
-    : "<p class=\"meta\">No field-of-study details available for this institution.</p>";
+  const fosLine = matchingFOS.length
+    ? `<div class="map-widget-fos"><span>Top major</span>${escapeHtml(matchingFOS[0].cipDesc || "N/A")}</div>`
+    : "";
 
-  const earnTiles = EARNINGS_SERIES
-    .map(
-      (s) => `
-      <div class="metric-tile">
-        <span>${s.cardCaption}</span>
-        <strong>${formatValue(s.key, college[s.key])}</strong>
-      </div>`
-    )
-    .join("");
+  const earnLis = EARNINGS_SERIES.map(
+    (s) =>
+      `<li><span>${escapeHtml(s.lineLabel)}</span><b>${formatValue(s.key, college[s.key])}</b></li>`
+  ).join("");
 
-  d3.select("#college-card").html(`
-    <strong>${college.name}</strong>
-    <p class="meta">${college.city || "Unknown city"}, ${college.state} · ${dataCohortCaption()}</p>
-    <div class="metric-grid">
-      ${earnTiles}
-      <div class="metric-tile">
-        <span>Completer Debt</span>
-        <strong>${formatValue("completerDebt", college.completerDebt)}</strong>
-      </div>
-      <div class="metric-tile">
-        <span>In-State Tuition</span>
-        <strong>${formatValue("tuitionInState", college.tuitionInState)}</strong>
-      </div>
-      <div class="metric-tile">
-        <span>Pell Grant Rate</span>
-        <strong>${formatRate(college.pellGrantRate)}</strong>
-      </div>
+  const alreadySaved = state.savedColleges.some((c) => String(c.unitid) === String(college.unitid));
+  const saveLabel = alreadySaved ? "In Compare" : "Save to Compare";
+  const saveDisabled = alreadySaved ? "disabled" : "";
+
+  const card = d3.select("#college-card");
+  card.html(`
+    <div class="map-widget-toolbar">
+      <button type="button" id="map-widget-save" class="map-widget-save-btn" ${saveDisabled}>${saveLabel}</button>
+      <button type="button" id="map-widget-close" class="map-widget-icon-btn" aria-label="Dismiss preview">×</button>
     </div>
-    ${fosHtml}
+    <div class="map-widget-body">
+      <div class="map-widget-head">
+        <strong>${escapeHtml(college.name)}</strong>
+        <span class="map-widget-loc">${escapeHtml(college.city || "—")}, ${escapeHtml(displayStateAbbr(college.state || ""))}</span>
+      </div>
+      <ul class="map-widget-kpis">
+        ${earnLis}
+        <li><span>Debt</span><b>${formatValue("completerDebt", college.completerDebt)}</b></li>
+        <li><span>Tuition</span><b>${formatValue("tuitionInState", college.tuitionInState)}</b></li>
+      </ul>
+      ${fosLine}
+    </div>
   `);
+
+  card.select("#map-widget-close").on("click", () => {
+    clearCollegePreview();
+  });
+  card.select("#map-widget-save").on("click", function () {
+    if (this.disabled || !state.selectedCollege) return;
+    if (addToSaved(state.selectedCollege)) {
+      updateCollegeCard(state.selectedCollege);
+    }
+  });
 }
 
 function formatValue(metric, value) {
