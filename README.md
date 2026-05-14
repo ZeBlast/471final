@@ -1,112 +1,105 @@
 # After Graduation
 
-This project is an interactive D3 webpage about post-college outcomes. It combines College Scorecard financial data with Post-Secondary Employment Outcomes (PSEO) earnings data to compare colleges, states, debt, cost, and earnings across multiple graduation cohorts.
+After Graduation is an interactive D3.js site that uses U.S. Department of Education **College Scorecard** data to explore how median earnings after completion relate to admissions, debt, tuition, and aid. The experience is organized into three sections on one page—**Learn** (scatter), **Explore** (map), and **Compare** (saved schools and small multiples)—with a separate [about.html](about.html) page for documentation, team roles, and AI-use transparency.
 
-## Datasets
+## Running locally
 
-### `data/schools.csv`
-Used for institution identity and location data.
+Open `index.html` in a modern browser from a local or static server (the page loads CSVs with D3; some environments block `file://` fetches). No build step is required.
 
-Fields used:
-- `name`, `city`, `state`
-- `lat`, `lon`
-- `tuition_in_state`, `tuition_out_of_state`
-- `room_oncampus`, `room_offcampus`
-- `booksupply`
+## Runtime datasets (required)
 
-Purpose:
-- powers the college map
-- provides tuition and estimated yearly cost
-- provides labels and geographic placement
+These files power `index.html` as shipped. They live in `data/college_scorecard_data/` and are read directly in the browser.
 
-### `data/aid.csv`
-Used for borrowing and debt metrics.
+### `Most-Recent-Cohorts-Institution.csv`
 
-Fields used:
-- `loan_principal`
-- `pell_grant_rate`
-- `federal_loan_rate`
-- `students_with_any_loan`
-- `median_debt_suppressed`
+Institution-level “most recent cohorts” extract from College Scorecard. Each row is one campus.
 
-Parsed from nested debt fields:
-- overall median debt
-- completer debt
-- monthly payment for completers
+**Identity & geography**
 
-Purpose:
-- adds debt and aid context to each school
-- supports debt burden, Pell rate, and borrowing comparisons
+- `UNITID`, `INSTNM`, `CITY`, `STABBR`
+- `LATITUDE`, `LONGITUDE` (map points; institutions without coordinates are omitted from the map but remain searchable in Compare)
 
-The above CSVs were downloaded from https://www.kaggle.com/datasets/akibmir/college-scorecard/
+**Admissions & sector**
 
-### `data/pseo_all_institutions.csv`
-Used as the institution lookup for PSEO.
+- `CONTROL` (public / private nonprofit / private for-profit), `ADM_RATE` (admission rate for the scatter horizontal axis when selected)
 
-Fields used:
-- `institution`
-- `label`
-- `institution_state`
+**Cost & aid signals**
 
-Purpose:
-- provides the PSEO institution name/id side of the merge
-- is matched to Scorecard schools by state and institution name
+- `TUITIONFEE_IN`, `TUITIONFEE_OUT` (published tuition; used on Learn, map encodings, and Compare)
+- `ROOMBOARD_ON`, `BOOKSUPPLY` (optional cost context in parsed objects)
+- `NPT4_PUB`, `NPT4_PRIV` (net price fields surfaced as estimated annual cost where parsed)
+- `PCTPELL_DCS_POOLED_SUPP` (Pell grant rate; map coloring option)
 
-### `data/pseoe_all.csv`
-Used for earnings outcomes by cohort.
+**Debt & repayment**
 
-Filters used:
-- `inst_level = I`
-- `cip_level = A`
-- `degree_level = 05`
+- `GRAD_DEBT_MDN` (median graduate debt for completers—primary debt measure)
+- `DEBT_MDN`, `GRAD_DEBT_MDN10YR_SUPP` (overall median debt and monthly payment where used)
 
-Cohorts used:
-- aggregate `0000`
-- `2001`, `2004`, `2007`, `2010`, `2013`, `2016`, `2019`
+**Earnings after completion**
 
-Fields used:
-- `grad_cohort`
-- `grad_cohort_years`
-- `y1_p50_earnings`, `y5_p50_earnings`, `y10_p50_earnings`
-- related p25/p75 and count fields when available
+- `MD_EARN_WNE_1YR` — median earnings one year after completion  
+- `MD_EARN_WNE_4YR` — median earnings four years after completion  
 
-Purpose:
-- powers the cohort selector
-- provides year 1, year 5, and year 10 earnings where available
-- drives state summaries and school-level earnings comparisons
+These drive the Learn vertical axis and map metric/size options, and appear in the map card and Compare charts.
 
-The above CSVs were downloaded from https://lehd.ces.census.gov/data/pseo_experimental.html
+**Derived in code**
 
-## Combined Data
+- **Earnings-to-debt ratio** — one-year median earnings divided by completer debt when both are present and debt is greater than zero (`js/new_script.js`).
 
-### `data/combined_pseo_all_cohorts.csv`
-This is the main dataset used by the webpage at runtime.
+### `Most-Recent-Cohorts-Field-of-Study.csv`
 
-It merges:
-- school identity, location, and tuition from `schools.csv`
-- debt and aid metrics from `aid.csv`
-- cohort earnings from the PSEO files
+Program-level extract keyed by `UNITID`. Used to enrich the **Explore** detail card when you hover or focus an institution.
 
-Each row represents:
-- one matched institution
-- for one graduation cohort
+**Columns consumed**
 
-## How The Visualizations Use The Data
+- `UNITID`, `INSTNM`, `CIPCODE`, `CIPDESC`
+- `EARN_MDN_1YR`, `EARN_MDN_4YR`, `EARN_COUNT_WNE_1YR` (sorting “top” majors by count where available)
+
+## How each section uses the data
 
 ### Learn
-- aggregates the combined data by state within the selected cohort
-- compares earnings, debt, cost, Pell rate, and earnings-to-debt ratio
+
+- Scatter plot: median earnings (1 or 4 years after completion) vs. admission rate, completer debt, in-state tuition, or out-of-state tuition.
+- Filters: institution segments (public, private nonprofit, for-profit), optional “prestigious” private nonprofit highlight, and state.
+- Narrative callouts summarize patterns for the current filter set.
+
+**Script:** `js/learn_earnings_scatter.js`
 
 ### Explore
-- plots matched institutions on a US map using latitude/longitude
-- colors and sizes colleges by earnings, debt, tuition, or aid metrics
 
-### Decide
-- lets the user inspect one college within one cohort
-- compares tuition, total estimated cost, completer debt, and available earnings horizons
+- U.S. map (Albers USA) with one dot per institution that has lat/long.
+- **Color by** median earnings (1 or 4 years), earnings-to-debt ratio, completer debt, in-state tuition, or Pell rate.
+- **Size by** median earnings (1 or 4 years), in-state tuition, or completer debt.
+- State filter, zoom controls, tooltips, and click-to-add for Compare.
+- Detail panel combines institution-level metrics with top field-of-study rows from the FoS file.
 
-## Important Notes
+**Script:** `js/new_script.js` (map, card, search, Compare)
 
-- The app reads `data/combined_pseo_all_cohorts.csv` directly in the browser with D3.
-- The local PSEO file does not contain cohorts after `2019`.
-- Not every cohort has populated `y1`, `y5`, and `y10` earnings columns, so availability depends on the selected cohort.
+### Compare
+
+- Search the full parsed institution list (not only map-eligible rows), filter by state, add schools to a tray.
+- Toggle in-state vs out-of-state tuition for the comparison charts.
+- For each saved school: summary tiles (debt, tuition, earnings-to-debt) and a line chart of the two earnings horizons with horizontal reference lines for completer debt and published tuition.
+
+**Script:** `js/new_script.js`
+
+### Loading overlay
+
+**Script:** `js/app_loading.js` — coordinates dismissal of the full-page overlay once the scatter and main bundle have finished their first CSV loads.
+
+## Optional / repository-only assets
+
+The `data/` folder may also contain older or auxiliary tables (for example `schools.csv`, `aid.csv`, PSEO extracts, or `combined_pseo_*.csv`) and `build_combined_pseo.py`. Those artifacts support alternate analyses or coursework workflows; **the published `index.html` visualization does not load them**. If you use them, document your own column mapping separately.
+
+## Source and updates
+
+- **College Scorecard data:** [https://collegescorecard.ed.gov/data/](https://collegescorecard.ed.gov/data/)
+- When you drop in newer “most recent cohorts” files, keep variable names consistent with `parseInstitutionRow` and `parseFieldOfStudyRow` in `js/new_script.js` and the scatter loader in `js/learn_earnings_scatter.js`.
+
+## Project pages
+
+| File | Purpose |
+|------|---------|
+| `index.html` | Main visualization (Learn, Explore, Compare) |
+| `about.html` | README-style documentation, team contributions, AI disclosure |
+| `css/styles.css` | Shared styling for index and about |
