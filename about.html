@@ -24,131 +24,38 @@
     <main>
       <article class="viz-article" id="about-project">
         <header class="viz-mast">
-          <p class="viz-kicker">College Scorecard, Documentation</p>
+          <p class="viz-kicker">After Graduation</p>
           <h1 class="viz-headline">About This Project</h1>
           <p class="viz-deck">
-            <strong>After Graduation</strong> is a single-page D3 experience built on the U.S. Department of Education College Scorecard. It moves from a national scatter of earnings against admissions and cost signals, to a pan and zoom map, to a comparison workspace where saved schools sit side by side on tuition, debt, and earnings horizons.
-          </p>
-          <p class="viz-byline">
-            <span>Runtime Data:</span> Most recent institution and field of study extracts in <code>data/college_scorecard_data/</code> (see README).
+            <strong>After Graduation</strong> is a single page site we built with D3 on top of the U.S. Department of Education College Scorecard. It is meant for anyone who wants a guided way to see how campuses compare on cost, borrowing, and pay after college before they dig into spreadsheets on their own.
           </p>
         </header>
 
-        <aside class="viz-method" aria-label="How to read this page">
+        <aside class="viz-method" aria-label="About this website and the College Scorecard">
           <p>
-            This page mirrors the editorial layout of the <a href="index.html">main visualization</a>, same navigation, typography, and method panels, so documentation feels like part of the story rather than a separate microsite.
+            We built this experience so the same public Scorecard numbers sit behind three simple moves on one page. You can start with a national scatter of campuses, open a map to browse by place, then save a handful of schools into a comparison view. The layout keeps attention on earnings, tuition, debt, and aid signals the Scorecard already publishes, instead of asking you to jump between tools.
+          </p>
+          <p>
+            The <strong>College Scorecard</strong> is a federal transparency program that publishes comparable figures on colleges and universities: typical costs, borrowing, graduation where available, and median earnings for students after they leave school. The goal is to make it easier for students and families to weigh price, aid, and long run outcomes alongside selectivity and geography.
           </p>
         </aside>
 
-        <h1 class="viz-headline"><span class="viz-section-prefix">README:</span> <span class="viz-section-rest">Datasets, Columns, and How Each Section Consumes Them</span></h1>
+        <h1 class="viz-headline"><span class="viz-section-prefix">On This Site:</span> <span class="viz-section-rest">Learn, Explore, and Compare</span></h1>
 
-        <p class="viz-article-intro about-intro-wide">
-          The live site loads two Scorecard CSVs in the browser with D3. The repository also keeps optional merge scripts and legacy tables (for example PSEO joins) under <code>data/</code>. Those files are <strong>not</strong> required to run <code>index.html</code>.
-        </p>
-
-        <section class="about-dataset-block" aria-labelledby="about-inst-csv">
-          <h2 class="about-file-heading viz-chart-title" id="about-inst-csv"><span class="viz-section-prefix">File</span> <span class="viz-section-rest"><code class="about-filename">Most-Recent-Cohorts-Institution.csv</code></span></h2>
-          <p class="viz-article-intro about-intro-wide about-dataset-lede">One row per institution. Columns are grouped below the way the parsers think about them.</p>
-          <div class="about-field-grid">
-            <div class="about-field-group about-field-group--learn">
-              <h3 class="about-field-group-title">Identity and Geography</h3>
-              <ul class="about-field-chips">
-                <li><code>UNITID</code></li>
-                <li><code>INSTNM</code></li>
-                <li><code>CITY</code></li>
-                <li><code>STABBR</code></li>
-                <li><code>LATITUDE</code></li>
-                <li><code>LONGITUDE</code></li>
-              </ul>
-            </div>
-            <div class="about-field-group about-field-group--explore">
-              <h3 class="about-field-group-title">Sector and Admissions</h3>
-              <ul class="about-field-chips">
-                <li><code>CONTROL</code></li>
-                <li><code>ADM_RATE</code></li>
-              </ul>
-            </div>
-            <div class="about-field-group about-field-group--gold">
-              <h3 class="about-field-group-title">Sticker Price and Cost Context</h3>
-              <ul class="about-field-chips">
-                <li><code>TUITIONFEE_IN</code></li>
-                <li><code>TUITIONFEE_OUT</code></li>
-                <li><code>ROOMBOARD_ON</code></li>
-                <li><code>BOOKSUPPLY</code></li>
-                <li><code>NPT4_PUB</code></li>
-                <li><code>NPT4_PRIV</code></li>
-              </ul>
-            </div>
-            <div class="about-field-group about-field-group--compare">
-              <h3 class="about-field-group-title">Debt, Aid, and Repayment</h3>
-              <ul class="about-field-chips">
-                <li><code>GRAD_DEBT_MDN</code></li>
-                <li><code>DEBT_MDN</code></li>
-                <li><code>GRAD_DEBT_MDN10YR_SUPP</code></li>
-                <li><code>PCTPELL_DCS_POOLED_SUPP</code></li>
-              </ul>
-            </div>
-            <div class="about-field-group about-field-group--teal">
-              <h3 class="about-field-group-title">Earnings After Completion</h3>
-              <ul class="about-field-chips">
-                <li><code>MD_EARN_WNE_1YR</code></li>
-                <li><code>MD_EARN_WNE_4YR</code></li>
-              </ul>
-              <p class="about-field-note">Code also derives an <strong>earnings to debt ratio</strong> when one year earnings and completer debt are both present.</p>
-            </div>
-          </div>
-        </section>
-
-        <section class="about-dataset-block" aria-labelledby="about-fos-csv">
-          <h2 class="about-file-heading viz-chart-title" id="about-fos-csv"><span class="viz-section-prefix">File</span> <span class="viz-section-rest"><code class="about-filename">Most-Recent-Cohorts-Field-of-Study.csv</code></span></h2>
-          <p class="viz-article-intro about-intro-wide about-dataset-lede">Program level rows keyed to institutions. The Explore card uses these to highlight top majors.</p>
-          <div class="about-field-grid about-field-grid--compact">
-            <div class="about-field-group about-field-group--learn">
-              <h3 class="about-field-group-title">Keys and Labels</h3>
-              <ul class="about-field-chips">
-                <li><code>UNITID</code></li>
-                <li><code>INSTNM</code></li>
-                <li><code>CIPCODE</code></li>
-                <li><code>CIPDESC</code></li>
-              </ul>
-            </div>
-            <div class="about-field-group about-field-group--teal">
-              <h3 class="about-field-group-title">Outcomes and Counts</h3>
-              <ul class="about-field-chips">
-                <li><code>EARN_MDN_1YR</code></li>
-                <li><code>EARN_MDN_4YR</code></li>
-                <li><code>EARN_COUNT_WNE_1YR</code></li>
-              </ul>
-              <p class="about-field-note">Programs are ranked by <code>EARN_COUNT_WNE_1YR</code> when building the “top major” tiles.</p>
-            </div>
-          </div>
-        </section>
-
-        <h2 class="about-file-heading viz-chart-title about-sections-hed"><span class="viz-section-prefix">Sections</span> <span class="viz-section-rest">How the Visuals Use the Rows Above</span></h2>
         <div class="about-pillar-grid">
           <article class="about-pillar-card about-pillar-card--learn">
             <h3 class="about-pillar-title">Learn</h3>
-            <p class="about-pillar-body">Scatter of median earnings (one or four years after completion) versus admission rate, completer debt, or in state or out of state tuition. Filters by control segment, a “prestigious” private nonprofit rule of thumb, and state. This automatically generated trend notes under the chart.</p>
+            <p class="about-pillar-body">Scatter of median earnings (one or four years after completion) versus admission rate, completer debt, or in state or out of state tuition. Filters by sector, a selective highlight for certain private nonprofit campuses, and state. Automatic trend notes summarize the filtered view above the chart.</p>
           </article>
           <article class="about-pillar-card about-pillar-card--explore">
             <h3 class="about-pillar-title">Explore</h3>
-            <p class="about-pillar-body">Albers USA map with one point per institution that has coordinates. These include color and size encode earnings, earnings to debt ratio, debt, tuition, or Pell rate. Pell rate had state drill down, zoom, tooltips, and click to stage for Compare.</p>
+            <p class="about-pillar-body">United States map with one point per institution that reports coordinates. Color and size can show earnings, earnings to debt ratio, debt, tuition, or Pell rate. State drill down, zoom, tooltips, and click to stage campuses for Compare. The detail card can also surface program level earnings from the Scorecard where those fields exist.</p>
           </article>
           <article class="about-pillar-card about-pillar-card--compare">
             <h3 class="about-pillar-title">Compare</h3>
             <p class="about-pillar-body">Search the full institution list, keep a tray of saved schools, toggle in state versus out of state tuition, and open per school panels with summary tiles plus a line chart of the two earnings horizons against completer debt and published tuition.</p>
           </article>
         </div>
-
-        <aside class="viz-method about-source-panel" aria-label="Sources">
-          <p>
-            <strong>Source:</strong> U.S. Department of Education College Scorecard, download center at <a href="https://collegescorecard.ed.gov/data/" target="_blank" rel="noopener noreferrer">collegescorecard.ed.gov/data</a>. Replace the CSVs in <code>data/college_scorecard_data/</code> when the department publishes refreshed extracts. The column names must stay aligned with the parsers in <code>js/learn_earnings_scatter.js</code> and <code>js/new_script.js</code>.
-          </p>
-        </aside>
-
-        <footer class="viz-footer">
-          <p>Return to the <a href="index.html#learn">visualization</a> or read <a href="#about-team">team contributions</a> below.</p>
-        </footer>
       </article>
 
       <article class="viz-article" id="about-team">
@@ -166,7 +73,7 @@
             <ul class="about-contrib-list">
               <li>Curated and versioned the Scorecard institution and field of study extracts used at runtime.</li>
               <li>Aligned CSV columns with the JavaScript parsers (earnings, debt, tuition, geography, Pell).</li>
-              <li>Documented optional assets in <code>data/</code> and the PSEO merge script for reproducibility.</li>
+              <li>Documented project structure and data preparation for the team.</li>
               <li>Cross tested load performance, missing values, and map eligibility (latitude and longitude present).</li>
             </ul>
           </div>
@@ -212,7 +119,7 @@
         </header>
 
         <aside class="viz-method about-ai-panel" aria-label="AI usage log">
-          <p><strong>Code:</strong> Claude in Cursor proposed starter D3 patterns for the scatter, map, and Compare line char. We then adapted them to the real Scorecard columns, accessibility attributes, and our interaction model.</p>
+          <p><strong>Code:</strong> Claude in Cursor proposed starter D3 patterns for the scatter, map, and Compare line chart. We then adapted them to the real Scorecard columns, accessibility attributes, and our interaction model.</p>
           <p><strong>Debugging:</strong> The same tools helped reason through filter and projection edge cases (empty states, suppressed values, resize). Fixes were applied and verified locally.</p>
           <p><strong>Data:</strong> Optional Python merge scaffolding was discussed in chat. The column names and joins were validated manually against CSV headers.</p>
           <p><strong>Writing and UX:</strong> Draft copy and layout ideas were iterated with Claude, then edited for accuracy, tone, and consistency with the rest of the site.</p>
